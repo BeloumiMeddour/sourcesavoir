@@ -1,0 +1,21 @@
+<header>
+    <a href="/">Accueil</a>
+    {{#if user_email}}
+        <a href="/todo">TODO</a>
+    {{/if}}
+
+    <a href="/contact">Contact</a>
+
+    {{#unless user_email}}
+        <a href="/connexion">Connexion</a>
+        <a href="/inscription">Inscription</a>
+    {{/unless}}
+
+    {{#if is_admin}}
+        <a href="/admin ">Admin</a>
+    {{/if}}
+
+    {{#if user_email}}
+        <button id="btn-deconnexion">Déconnexion</button>
+    {{/if}}
+</header>

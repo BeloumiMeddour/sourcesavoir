@@ -1,0 +1,5 @@
+-- CreateTable
+CREATE TABLE "User" (
+    "id_user" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "role" TEXT NOT NULL
+);

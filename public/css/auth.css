@@ -1,0 +1,32 @@
+#form-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 300px;
+    margin: auto;
+}
+
+#form-auth label {
+    display: flex;
+    flex-direction: column;
+}
+
+#form-auth label input {
+    padding: 0.5rem;
+    font-size: 1rem;
+}
+
+#form-auth input[type="submit"] {
+    padding: 0.75rem;
+    font-size: 1.2rem;
+    background-color: blue;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.erreur {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+}
