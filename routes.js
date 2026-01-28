@@ -8,6 +8,15 @@ import {
   deleteCours,
 } from "./model/cours.js";
 
+import { 
+    addProfesseur, 
+    getProfesseurs, 
+    getProfesseurById, 
+    updateProfesseur, 
+    deleteProfesseur,
+    getProfesseursBySpecialite 
+} from "./model/professeur.js";
+
 const router = Router();
 
 // Importation du passport
@@ -171,5 +180,134 @@ router.delete("/api/cours/:id", async (req, res, next) => {
   }
 });
 
+// ==================== ROUTES PROFESSEURS ====================
 
+// Route pour la page de gestion des professeurs
+router.get("/professeurs", async (req, res) => {
+    // Protection de la route
+    if (!req.session.user_email) {
+        return res.redirect("/connexion");
+    }
+    if (req.session.user_role !== "admin") {
+        return res.status(403).send("Accès refusé");
+    }
+    
+    res.render("professeurs", {
+        titre: "Gestion des Professeurs",
+        styles: ["./css/style.css", "./css/professeurs.css"],
+        scripts: ["./js/professeurs.js"],
+        professeurs: await getProfesseurs(),
+        user_email: req.session.user_email || null,
+        is_admin: req.session.user_role === "admin",
+    });
+});
+
+
+// Route pour ajouter un professeur
+router.post("/api/add-professeur", async (req, res) => {
+    const { matricule, nom, prenom, email, specialite, telephone } = req.body;
+    try {
+        const professeur = await addProfesseur({
+            matricule,
+            nom,
+            prenom,
+            email,
+            specialite,
+            telephone,
+        });
+        res.status(201).json({
+            msg: "Professeur ajouté avec succès",
+            professeur,
+        });
+    } catch (error) {
+        if (error.code === "P2002") {
+            res.status(409).json({
+                error: "Un professeur avec cet email existe déjà",
+            });
+        } else {
+            res.status(500).json({
+                error: "Erreur lors de l'ajout du professeur: " + error.message,
+            });
+        }
+    }
+});
+
+// Route pour obtenir la liste des professeurs
+router.get("/api/professeurs", async (req, res) => {
+    try {
+        const { specialite } = req.query;
+        let professeurs;
+        
+        if (specialite) {
+            professeurs = await getProfesseursBySpecialite(specialite);
+        } else {
+            professeurs = await getProfesseurs();
+        }
+        
+        res.status(200).json(professeurs);
+    } catch (error) {
+        res.status(500).json({
+            error: "Erreur lors de la récupération des professeurs: " + error.message,
+        });
+    }
+});
+
+// Route pour obtenir un professeur par son ID
+router.get("/api/professeurs/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const professeur = await getProfesseurById(id);
+        if (!professeur) {
+            return res.status(404).json({
+                error: "Professeur non trouvé",
+            });
+        }
+        res.status(200).json(professeur);
+    } catch (error) {
+        res.status(500).json({
+            error: "Erreur lors de la récupération du professeur: " + error.message,
+        });
+    }
+});
+
+// Route pour mettre à jour un professeur
+router.put("/api/update-professeur/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const professeur = await updateProfesseur(id, req.body);
+        res.status(200).json({
+            msg: "Professeur mis à jour avec succès",
+            professeur,
+        });
+    } catch (error) {
+        if (error.message === "Professeur non trouvé") {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({
+                error: "Erreur lors de la mise à jour du professeur: " + error.message,
+            });
+        }
+    }
+});
+
+// Route pour supprimer un professeur
+router.delete("/api/delete-professeur/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        await deleteProfesseur(id);
+        res.status(200).json({
+            msg: "Professeur supprimé avec succès",
+        });
+    } catch (error) {
+        if (error.message === "Professeur non trouvé") {
+            res.status(404).json({ error: error.message });
+        } else if (error.message.includes("cours planifiés")) {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(500).json({
+                error: "Erreur lors de la suppression du professeur: " + error.message,
+            });
+        }
+    }
+});
 export default router;

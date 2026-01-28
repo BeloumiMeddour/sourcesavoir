@@ -16,16 +16,18 @@ model User {
   createdAt DateTime @default(now())
 }
 
+// Catalogue des cours (créé par ton collègue)
 model Cours {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
   nom       String
   duree     Int
   programme String
   etape     String
   typeSalle String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  seances   Seance[]  // Relation vers les séances planifiées
 }
 
 model Salle {
@@ -36,11 +38,46 @@ model Salle {
   createdAt DateTime @default(now())
 }
 
+// Professeur (ton modèle)
 model Professeur {
-  id         Int      @id @default(autoincrement())
-  matricule  String   @unique
-  nom        String
-  prenom     String
-  specialite String
-  createdAt  DateTime @default(now())
+  id_professeur     Int              @id @default(autoincrement())
+  matricule         String           @unique
+  nom               String
+  prenom            String
+  email             String           @unique
+  specialite        String
+  telephone         String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  disponibilites    Disponibilite[]
+  seances           Seance[]         // Séances enseignées
+}
+
+model Disponibilite {
+  id_disponibilite  Int        @id @default(autoincrement())
+  id_professeur     Int
+  professeur        Professeur @relation(fields: [id_professeur], references: [id_professeur], onDelete: Cascade)
+  jourSemaine       Int        // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+  heureDebut        String     // Format "HH:mm" ex: "08:00"
+  heureFin          String     // Format "HH:mm" ex: "12:00"
+  recurrent         Boolean    @default(true) // true = se répète chaque semaine
+  dateDebut         DateTime?  // optionnel : pour les disponibilités ponctuelles
+  dateFin           DateTime?  // optionnel : pour les disponibilités ponctuelles
+  createdAt         DateTime   @default(now())
+}
+
+// Séances planifiées (ce que tu appelais "Cours")
+model Seance {
+  id_seance         Int        @id @default(autoincrement())
+  titre             String?
+  id_cours          Int?
+  cours             Cours?     @relation(fields: [id_cours], references: [id])
+  id_professeur     Int
+  professeur        Professeur @relation(fields: [id_professeur], references: [id_professeur])
+  dateCours         DateTime
+  heureDebut        String
+  heureFin          String
+  estPasse          Boolean    @default(false) // true si la séance est déjà passée
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 }
