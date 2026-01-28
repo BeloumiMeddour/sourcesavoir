@@ -179,7 +179,6 @@ router.delete("/api/cours/:id", async (req, res, next) => {
     next(error);
   }
 });
-
 // ==================== ROUTES PROFESSEURS ====================
 
 // Route pour la page de gestion des professeurs
@@ -202,18 +201,15 @@ router.get("/professeurs", async (req, res) => {
     });
 });
 
-
 // Route pour ajouter un professeur
 router.post("/api/add-professeur", async (req, res) => {
-    const { matricule, nom, prenom, email, specialite, telephone } = req.body;
+    const { matricule, nom, prenom, specialite } = req.body;
     try {
         const professeur = await addProfesseur({
             matricule,
             nom,
             prenom,
-            email,
             specialite,
-            telephone,
         });
         res.status(201).json({
             msg: "Professeur ajouté avec succès",
@@ -222,7 +218,7 @@ router.post("/api/add-professeur", async (req, res) => {
     } catch (error) {
         if (error.code === "P2002") {
             res.status(409).json({
-                error: "Un professeur avec cet email existe déjà",
+                error: "Un professeur avec ce matricule existe déjà",
             });
         } else {
             res.status(500).json({
