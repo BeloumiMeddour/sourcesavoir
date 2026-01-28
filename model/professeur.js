@@ -10,16 +10,14 @@ const prisma = new PrismaClient();
  * @returns le professeur ajouté
  */
 const addProfesseur = async (professeurData) => {
-    const { matricule, nom, prenom, email, specialite, telephone } = professeurData;
+    const { matricule, nom, prenom, specialite } = professeurData;
     
     const newProfesseur = await prisma.professeur.create({
         data: {
             matricule,
             nom,
             prenom,
-            email,
             specialite,
-            telephone,
         },
     });
     return newProfesseur;
@@ -58,10 +56,10 @@ const getProfesseurs = async (filters = {}) => {
  */
 const getProfesseurById = async (id) => {
     return await prisma.professeur.findUnique({
-        where: { id_professeur: id },
+        where: { id: id },
         include: {
             disponibilites: true,
-            seances: true,  // CHANGÉ: cours → seances
+            affectations: true,
         },
     });
 };
@@ -74,7 +72,7 @@ const getProfesseurById = async (id) => {
  */
 const updateProfesseur = async (id, professeurData) => {
     const professeur = await prisma.professeur.findUnique({
-        where: { id_professeur: id },
+        where: { id: id },
     });
     
     if (!professeur) {
@@ -82,7 +80,7 @@ const updateProfesseur = async (id, professeurData) => {
     }
     
     const updatedProfesseur = await prisma.professeur.update({
-        where: { id_professeur: id },
+        where: { id: id },
         data: professeurData,
     });
     
@@ -96,11 +94,13 @@ const updateProfesseur = async (id, professeurData) => {
  */
 const deleteProfesseur = async (id) => {
     const professeur = await prisma.professeur.findUnique({
-        where: { id_professeur: id },
+        where: { id: id },
         include: {
-            seances: {  // CHANGÉ: cours → seances
+            affectations: {
                 where: {
-                    estPasse: false, // Séances non passées
+                    date: {
+                        gte: new Date(), // Affectations futures
+                    },
                 },
             },
         },
@@ -110,13 +110,13 @@ const deleteProfesseur = async (id) => {
         throw new Error("Professeur non trouvé");
     }
     
-    // Vérifier si le professeur a des séances planifiées non passées
-    if (professeur.seances && professeur.seances.length > 0) {
-        throw new Error("Impossible de supprimer ce professeur car il a des séances planifiées non passées");
+    // Vérifier si le professeur a des cours planifiés futurs
+    if (professeur.affectations && professeur.affectations.length > 0) {
+        throw new Error("Impossible de supprimer ce professeur car il a des cours planifiés futurs");
     }
     
     await prisma.professeur.delete({
-        where: { id_professeur: id },
+        where: { id: id },
     });
     
     return true;
@@ -135,23 +135,22 @@ const getProfesseursBySpecialite = async (specialite) => {
 
 /**
  * Filtre les professeurs par disponibilité pour un jour donné
- * @param {number} jourSemaine - 0 = Dimanche, 1 = Lundi, etc.
+ * @param {string} jour - "Lundi", "Mardi", etc.
  * @returns liste des professeurs disponibles ce jour
  */
-const getProfesseursByDisponibilite = async (jourSemaine) => {
+const getProfesseursByDisponibilite = async (jour) => {
     return await prisma.professeur.findMany({
         where: {
             disponibilites: {
                 some: {
-                    jourSemaine: jourSemaine,
-                    recurrent: true,
+                    jour: jour,
                 },
             },
         },
         include: {
             disponibilites: {
                 where: {
-                    jourSemaine: jourSemaine,
+                    jour: jour,
                 },
             },
         },
