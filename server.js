@@ -36,6 +36,7 @@ app.use(helmet(cspOptions));
 app.use(compression());
 app.use(cors());
 app.use(json());
+app.use(express.urlencoded({ extended: true }));
 
 //Middleware de gestion des sessions
 app.use(
