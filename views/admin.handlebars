@@ -1,4 +1,50 @@
-<section>
-    <h1>Bienvenue sur la page d'administration</h1>
-    <p>Ceci est le contenu de la page d'administration.</p>
+<section class="page-section">
+    <div class="top-action-row">
+        <h1>Gérer les Comptes</h1>
+        <div class="right-actions">
+            <input type="text" class="search-input" id="search-users" placeholder="Rechercher..." />
+            <button class="btn btn-vert" id="btn-toggle-form">+ Ajouter un Compte</button>
+        </div>
+    </div>
+
+    <div class="form-card hidden" id="form-card">
+        <form id="form-utilisateur">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Courriel</label>
+                    <input type="email" id="email" placeholder="Ex: jean@lacite.ca" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" placeholder="Minimum 5 caractères" required />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="role">Rôle</label>
+                <select id="role">
+                    <option value="user">Utilisateur</option>
+                    <option value="responsable">Responsable</option>
+                    <option value="admin">Administrateur</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Créer l'utilisateur</button>
+        </form>
+    </div>
+
+    <div id="msg-admin" class="message"></div>
+
+    <div class="table-container">
+        <table id="table-utilisateurs">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Date de création</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </section>

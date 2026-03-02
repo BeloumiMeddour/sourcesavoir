@@ -1,8 +1,12 @@
-<html lang="en">
+<html lang="fr">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{{titre}}</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         {{#each styles}}
             <link rel="stylesheet" href="{{this}}" />
@@ -14,10 +18,14 @@
         <script type="module" src="/js/deconnexion.js"></script>
     </head>
     <body>
-        {{> header}}
-        <main>
-            {{{body}}}
-        </main>
-        {{> footer}}
+        <div class="app-layout">
+            {{> header}}
+            <div class="app-main">
+                <div id="message"></div>
+                <main>
+                    {{{body}}}
+                </main>
+            </div>
+        </div>
     </body>
 </html>
