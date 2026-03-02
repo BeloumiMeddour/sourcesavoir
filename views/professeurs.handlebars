@@ -1,0 +1,52 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1>Gérer les Professeurs</h1>
+        <div class="right-actions">
+            <input type="text" class="search-input" id="search-profs" placeholder="Rechercher..." />
+            <button class="btn btn-vert" id="btn-toggle-form">+ Ajouter un Professeur</button>
+        </div>
+    </div>
+
+    <div class="form-card hidden" id="form-card">
+        <form id="form-professeur">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="matricule">Matricule</label>
+                    <input type="text" id="matricule" placeholder="Ex: P001" required />
+                </div>
+                <div class="form-group">
+                    <label for="specialite">Spécialité</label>
+                    <input type="text" id="specialite" placeholder="Ex: Informatique" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" id="nom" placeholder="Ex: Dupont" required />
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" id="prenom" placeholder="Ex: Jean" required />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter le professeur</button>
+        </form>
+    </div>
+
+    <div id="msg-professeur" class="message"></div>
+
+    <div class="table-container">
+        <table id="table-professeurs">
+            <thead>
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Spécialité</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>

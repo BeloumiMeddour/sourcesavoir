@@ -1,15 +1,15 @@
-<section>
-    <h2>{{type}}</h2>
-
+<section class="auth-container">
     <form id="form-auth" novalidate>
+        <h2>{{type}}</h2>
+
         <label>
             Courriel
-            <input type="email" id="input-courriel" />
+            <input type="email" id="input-courriel" placeholder="exemple@lacite.ca" />
         </label>
 
         <label>
             Mot de passe
-            <input type="password" id="input-mot-de-passe" />
+            <input type="password" id="input-mot-de-passe" placeholder="Minimum 5 caractères" />
         </label>
 
         <input type="submit" value="{{type}}" />

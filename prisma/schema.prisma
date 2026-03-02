@@ -8,13 +8,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  role      String   // Administrateur ou ResponsableAntratiff
-  nom       String
-  prenom    String
+  role      String   @default("user")
+  nom       String?  // Optionnel
+  prenom    String?  // Optionnel
   createdAt DateTime @default(now())
 }
 
@@ -25,6 +26,7 @@ model Cours {
   nom             String
   duree           Int
   programme       String
+  etapeEtude      String
   typeSalle       String
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
@@ -79,8 +81,8 @@ model AffectationCours {
   id_cours        Int
   cours           Cours      @relation(fields: [id_cours], references: [id])
   
-  id_professeur   Int
-  professeur      Professeur @relation(fields: [id_professeur], references: [id])
+  id_professeur   Int?
+  professeur      Professeur? @relation(fields: [id_professeur], references: [id])
   
   id_salle        Int
   salle           Salle      @relation(fields: [id_salle], references: [id])

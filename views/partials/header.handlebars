@@ -1,21 +1,104 @@
-<header>
-    <a href="/">Accueil</a>
-    {{#if user_email}}
-        <a href="/todo">TODO</a>
-    {{/if}}
+<!-- Top bar -->
+<div class="topbar">
+    <div class="topbar-left">
+        <button class="sidebar-toggle" id="btn-sidebar-toggle">&#9776;</button>
+        <a href="/" class="topbar-logo">
+            <img src="/assets/logoLacite.jpg" alt="La Cité" />
+            <span>Gestion des Horaires</span>
+        </a>
+    </div>
+    <div class="topbar-right">
+        <span class="topbar-clock" id="topbar-clock"></span>
+        {{#if user_email}}
+            <span class="topbar-email">{{user_email}}</span>
+            <button id="btn-deconnexion">Déconnexion</button>
+        {{else}}
+            <a href="/connexion" class="topbar-link">Se connecter</a>
+        {{/if}}
+    </div>
+</div>
 
-    <a href="/contact">Contact</a>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <nav class="sidebar-nav">
+        {{#if is_admin}}
+            <div class="sidebar-role">Administrateur</div>
+        {{/if}}
 
-    {{#unless user_email}}
-        <a href="/connexion">Connexion</a>
-        <a href="/inscription">Inscription</a>
-    {{/unless}}
+        {{#unless user_email}}
+            <a href="/connexion" class="sidebar-link">
+                <span class="sidebar-icon">&#128274;</span>
+                S'authentifier
+            </a>
+            <a href="/inscription" class="sidebar-link">
+                <span class="sidebar-icon">&#9997;</span>
+                Inscription
+            </a>
+        {{/unless}}
 
-    {{#if is_admin}}
-        <a href="/admin ">Admin</a>
-    {{/if}}
+        {{#if is_admin}}
+            <a href="/admin" class="sidebar-link">
+                <span class="sidebar-icon">&#128101;</span>
+                Gérer les Comptes
+            </a>
+        {{/if}}
 
-    {{#if user_email}}
-        <button id="btn-deconnexion">Déconnexion</button>
-    {{/if}}
-</header>
+        {{#if user_email}}
+            <a href="/salles" class="sidebar-link">
+                <span class="sidebar-icon">&#127970;</span>
+                Gérer les Salles
+            </a>
+            <a href="/professeurs" class="sidebar-link">
+                <span class="sidebar-icon">&#128100;</span>
+                Gérer les Professeurs
+            </a>
+            <a href="/cours" class="sidebar-link">
+                <span class="sidebar-icon">&#128218;</span>
+                Cours
+            </a>
+            <a href="/affectations" class="sidebar-link">
+                <span class="sidebar-icon">&#128197;</span>
+                Affectations
+            </a>
+            <a href="/planner" class="sidebar-link">
+                <span class="sidebar-icon">&#128197;</span>
+                Planner
+            </a>
+        {{/if}}
+    </nav>
+
+    <div class="sidebar-footer">
+        &copy; 2026 Planify &ndash; La Cité
+    </div>
+</aside>
+
+<script>
+    // Horloge en temps réel
+    function mettreAJourHorloge() {
+        var now = new Date();
+        var h = String(now.getHours()).padStart(2, '0');
+        var m = String(now.getMinutes()).padStart(2, '0');
+        var s = String(now.getSeconds()).padStart(2, '0');
+        var el = document.getElementById('topbar-clock');
+        if (el) el.textContent = h + ':' + m + ':' + s;
+    }
+    setInterval(mettreAJourHorloge, 1000);
+    mettreAJourHorloge();
+
+    // Toggle sidebar
+    var btnToggleSidebar = document.getElementById('btn-sidebar-toggle');
+    var sidebar = document.querySelector('.sidebar');
+    var appMain = document.querySelector('.app-main');
+
+    btnToggleSidebar.addEventListener('click', function () {
+        sidebar.classList.toggle('open');
+        appMain.classList.toggle('sidebar-ouverte');
+    });
+
+    // Marquer le lien actif dans la sidebar
+    document.querySelectorAll('.sidebar-link').forEach(function(link) {
+        if (link.getAttribute('href') === window.location.pathname) {
+            link.classList.add('active');
+        }
+    });
+</script>
