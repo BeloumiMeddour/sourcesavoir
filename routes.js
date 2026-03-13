@@ -141,10 +141,36 @@ router.get("/", (req, res) => {
     res.render("accueil", {
         titre: "Planify – Gestion des horaires",
         styles: ["./css/style.css"],
-        scripts: [],
+        scripts: ["./js/accueil.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
     });
+});
+
+// API statistiques pour la page d'accueil
+router.get("/api/statistiques", async (req, res) => {
+    try {
+        const cours = await getCours();
+        const salles = await getSalles();
+        const professeurs = await getProfesseurs();
+        const affectations = await getAffectations();
+
+        // Taux d'occupation = affectations avec professeur / total
+        var avecProf = affectations.filter(a => a.id_professeur).length;
+        var tauxOccupation = affectations.length > 0
+            ? Math.round((avecProf / affectations.length) * 100)
+            : 0;
+
+        res.json({
+            nbCours: cours.length,
+            nbSalles: salles.length,
+            nbProfesseurs: professeurs.length,
+            nbAffectations: affectations.length,
+            tauxOccupation: tauxOccupation,
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors du chargement des statistiques" });
+    }
 });
 
 // Page de contact

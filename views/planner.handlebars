@@ -13,25 +13,18 @@
         </div>
     </div>
 
+    <!-- Navigation simple : Précédent / Aujourd'hui / Suivant -->
     <div class="planning-controls">
-        <div class="vue-toggle">
-            <button class="btn btn-vue active" id="btn-vue-semaine">Semaine</button>
-            <button class="btn btn-vue" id="btn-vue-mois">Mois</button>
-        </div>
-        <div id="ctrl-semaine">
-            <select id="select-semaine"></select>
-        </div>
-        <div id="ctrl-mois" style="display:none;">
-            <button class="btn btn-nav" id="btn-mois-prec">&lt;</button>
-            <span id="label-mois"></span>
-            <button class="btn btn-nav" id="btn-mois-suiv">&gt;</button>
+        <div>
+            <button class="btn btn-nav" id="btn-prec">&lt; Précédent</button>
+            <button class="btn btn-bleu" id="btn-aujourdhui">Aujourd'hui</button>
+            <button class="btn btn-nav" id="btn-suiv">Suivant &gt;</button>
         </div>
         <span class="semaine-label" id="label-semaine"></span>
-        <div>
-            <button class="btn btn-bleu" id="btn-exporter">Exporter</button>
-        </div>
+        <button class="btn btn-bleu" id="btn-exporter">Imprimer</button>
     </div>
 
+    <!-- Grille de la semaine -->
     <div class="planning-card">
         <div class="planning-grid" id="planning-grid">
             <!-- Rempli par JS -->
@@ -40,11 +33,7 @@
         <div class="planning-legende">
             <div class="legende-item">
                 <div class="legende-dot vert"></div>
-                Réservation
-            </div>
-            <div class="legende-item">
-                <div class="legende-dot rouge"></div>
-                Conflit
+                Cours planifié
             </div>
         </div>
     </div>

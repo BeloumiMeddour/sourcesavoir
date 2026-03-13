@@ -101,4 +101,40 @@
             <tbody></tbody>
         </table>
     </div>
+
+    <!-- Modale de modification (cachée par défaut) -->
+    <div id="modale-modifier" class="modale-overlay" style="display:none;">
+        <div class="modale-contenu">
+            <h3>Modifier l'affectation</h3>
+            <input type="hidden" id="mod-id">
+            <div class="modale-champ">
+                <label>Cours</label>
+                <select id="mod-cours"></select>
+            </div>
+            <div class="modale-champ">
+                <label>Salle</label>
+                <select id="mod-salle"></select>
+            </div>
+            <div class="modale-champ">
+                <label>Professeur</label>
+                <select id="mod-prof"></select>
+            </div>
+            <div class="modale-champ">
+                <label>Date</label>
+                <input type="date" id="mod-date">
+            </div>
+            <div class="modale-champ">
+                <label>Plage horaire</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <select id="mod-debut"></select>
+                    <span>à</span>
+                    <select id="mod-fin"></select>
+                </div>
+            </div>
+            <div class="modale-actions">
+                <button class="btn btn-modifier" id="mod-valider">Valider</button>
+                <button class="btn btn-supprimer" id="mod-annuler">Annuler</button>
+            </div>
+        </div>
+    </div>
 </section>
