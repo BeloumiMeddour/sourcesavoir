@@ -787,6 +787,58 @@ form {
 }
 
 /* ===========================
+   STATISTIQUES ACCUEIL
+=========================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: var(--blanc);
+    border: 1px solid #eee;
+    border-radius: var(--radius);
+    padding: 1.2rem 1rem;
+    text-align: center;
+    box-shadow: var(--ombre);
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ombre-hover);
+}
+
+.stat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.stat-nombre {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--rouge-lacite);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--gris-texte);
+    margin-top: 0.25rem;
+}
+
+.accueil-sous-titre {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--noir);
+    margin-bottom: 0.5rem;
+}
+
+/* ===========================
    AUTH
 =========================== */
 
@@ -949,6 +1001,10 @@ form {
     .accueil-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 /* ===========================
@@ -971,6 +1027,10 @@ form {
 
     .accueil-grid {
         grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .plage-horaire-row {
@@ -1103,122 +1163,23 @@ form {
 }
 
 /* ===========================
-   TOGGLE VUE (SEMAINE / MOIS)
+   BOUTONS NAVIGATION PLANNER
 =========================== */
 
-.vue-toggle {
-    display: flex;
-    gap: 0;
-    border: 1.5px solid var(--gris-bordure);
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.btn-vue {
-    padding: 0.35rem 0.9rem;
+.btn-nav {
+    padding: 0.35rem 0.75rem;
     font-size: 0.85rem;
-    border: none;
+    border: 1.5px solid var(--gris-bordure);
     background: var(--blanc);
-    color: var(--gris-texte);
+    color: var(--gris-fonce);
+    border-radius: 5px;
     cursor: pointer;
     font-weight: 500;
     transition: var(--transition);
 }
 
-.btn-vue:hover {
-    background: var(--gris-fond);
-}
-
-.btn-vue.active {
-    background: var(--rouge-lacite);
-    color: white;
-    font-weight: 600;
-}
-
-.btn-nav {
-    padding: 0.3rem 0.7rem;
-    font-size: 1rem;
-    border: 1.5px solid var(--gris-bordure);
-    background: var(--blanc);
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 700;
-    transition: var(--transition);
-}
-
 .btn-nav:hover {
     background: var(--gris-fond);
-}
-
-#ctrl-mois {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-#label-mois {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--rouge-lacite);
-    min-width: 140px;
-    text-align: center;
-}
-
-/* ===========================
-   VUE MOIS - CALENDRIER
-=========================== */
-
-.planning-grid-mois {
-    grid-template-columns: repeat(7, 1fr) !important;
-}
-
-.mois-cell {
-    min-height: 90px;
-    border: 1px solid #eee;
-    padding: 0.3rem;
-    font-size: 0.78rem;
-    vertical-align: top;
-    background: var(--blanc);
-}
-
-.mois-cell-vide {
-    background: var(--gris-fond);
-    min-height: 90px;
-}
-
-.mois-cell-aujourdhui {
-    background: #f0faf4;
-    border-color: var(--vert);
-}
-
-.mois-num-jour {
-    font-weight: 700;
-    font-size: 0.82rem;
-    color: var(--gris-fonce);
-    margin-bottom: 0.25rem;
-}
-
-.mois-cell-aujourdhui .mois-num-jour {
-    color: var(--vert);
-}
-
-.mois-event {
-    background: var(--vert);
-    color: white;
-    font-size: 0.65rem;
-    padding: 2px 4px;
-    border-radius: 3px;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: default;
-}
-
-.mois-event-plus {
-    font-size: 0.62rem;
-    color: var(--gris-texte);
-    font-style: italic;
 }
 
 /* ===========================

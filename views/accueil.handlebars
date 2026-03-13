@@ -5,6 +5,37 @@
     {{#if user_email}}
         <div class="user-info">Connecté : <strong>{{user_email}}</strong></div>
 
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">&#128218;</div>
+                <div class="stat-nombre" id="stat-cours">–</div>
+                <div class="stat-label">Cours</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128100;</div>
+                <div class="stat-nombre" id="stat-profs">–</div>
+                <div class="stat-label">Professeurs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#127970;</div>
+                <div class="stat-nombre" id="stat-salles">–</div>
+                <div class="stat-label">Salles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128197;</div>
+                <div class="stat-nombre" id="stat-affectations">–</div>
+                <div class="stat-label">Affectations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128200;</div>
+                <div class="stat-nombre" id="stat-occupation">–</div>
+                <div class="stat-label">Taux d'occupation</div>
+            </div>
+        </div>
+
+        <!-- Navigation rapide -->
+        <h2 class="accueil-sous-titre">Accès rapide</h2>
         <div class="accueil-grid">
             <a href="/cours" class="accueil-card">
                 <div class="card-icon">&#128218;</div>
