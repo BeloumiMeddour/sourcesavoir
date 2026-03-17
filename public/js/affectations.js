@@ -3,8 +3,11 @@
 var formAffectation = document.getElementById("form-affectation");
 var msgAffectation = document.getElementById("msg-affectation");
 var tbody = document.querySelector("#table-affectations tbody");
+var selectSemestre = document.getElementById("id_semestre");
 var selectCours = document.getElementById("id_cours");
 var selectSalle = document.getElementById("id_salle");
+var selectJour = document.getElementById("jour");
+var selectProfesseur = document.getElementById("id_professeur");
 var selectHeureDebut = document.getElementById("heureDebut");
 var selectHeureFin = document.getElementById("heureFin");
 
@@ -28,6 +31,21 @@ async function chargerSelectCours() {
     });
 }
 
+// --- Charger les semestres dans le menu déroulant ---
+async function chargerSelectSemestres() {
+    var response = await fetch("/api/semestres");
+    var semestres = await response.json();
+
+    semestres.forEach(function (s) {
+        var option = document.createElement("option");
+        option.value = s.id;
+        var dateDebut = new Date(s.dateDebut).toLocaleDateString("fr-CA");
+        var dateFin = new Date(s.dateFin).toLocaleDateString("fr-CA");
+        option.textContent = s.nom + " (" + dateDebut + " - " + dateFin + ")";
+        selectSemestre.appendChild(option);
+    });
+}
+
 // --- Charger les salles dans le menu déroulant ---
 async function chargerSelectSalles() {
     var response = await fetch("/api/salles");
@@ -41,53 +59,98 @@ async function chargerSelectSalles() {
     });
 }
 
-// --- Charger la liste des professeurs ---
-async function chargerProfesseurs() {
+// --- Charger les professeurs dans le menu déroulant ---
+async function chargerSelectProfesseurs() {
     var response = await fetch("/api/professeurs");
     var professeurs = await response.json();
-    return professeurs;
+
+    professeurs.forEach(function (p) {
+        var option = document.createElement("option");
+        option.value = p.id;
+        option.textContent = p.prenom + " " + p.nom;
+        selectProfesseur.appendChild(option);
+    });
+}
+
+// --- Convertir numéro jour (0-6) en nom ---
+function getNomJour(numJour) {
+    var jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    return jours[parseInt(numJour)];
 }
 
 // --- Charger et afficher la liste des affectations ---
 async function chargerAffectations() {
     var response = await fetch("/api/affectations");
     var affectations = await response.json();
-    var professeurs = await chargerProfesseurs();
+
+    // Charger aussi les semestres pour afficher leurs noms
+    var resSemestres = await fetch("/api/semestres");
+    var semestres = await resSemestres.json();
+    var mapSemestres = {};
+    semestres.forEach(s => { mapSemestres[s.id] = s.nom; });
 
     tbody.innerHTML = "";
 
-    affectations.forEach(function (a) {
+    affectations.forEach(async function (a) {
         var tr = document.createElement("tr");
-        var dateStr = new Date(a.date).toLocaleDateString("fr-CA");
-        var profNom = a.professeur ? a.professeur.prenom + " " + a.professeur.nom : "—";
-
-        // Si pas de professeur assigné, afficher un select pour en choisir un
-        var profCell = "";
-        if (!a.id_professeur) {
-            profCell = '<select class="select-prof" data-id="' + a.id + '">';
-            profCell += '<option value="">-- Choisir --</option>';
-            professeurs.forEach(function (p) {
-                profCell += '<option value="' + p.id + '">' + p.prenom + ' ' + p.nom + '</option>';
-            });
-            profCell += '</select> ';
-            profCell += '<button class="btn btn-assigner" onclick="assignerProf(' + a.id + ')">Assigner</button>';
+        
+        // Afficher le jour ou la date selon le cas
+        var dateJourStr = "";
+        if (a.jour !== null && a.jour !== undefined && !a.date) {
+            // Affectation par jour de la semaine (récurrente)
+            dateJourStr = getNomJour(a.jour) + " (hebdo)";
+        } else if (a.date) {
+            // Affectation avec date spécifique
+            dateJourStr = new Date(a.date).toLocaleDateString("fr-CA");
         } else {
-            profCell = profNom;
+            dateJourStr = "—";
         }
+        
+        var profNom = a.professeur ? a.professeur.prenom + " " + a.professeur.nom : "—";
 
         // Stocker les données dans les attributs pour la modification
         tr.setAttribute("data-id", a.id);
         tr.setAttribute("data-id_cours", a.id_cours);
         tr.setAttribute("data-id_salle", a.id_salle);
         tr.setAttribute("data-id_professeur", a.id_professeur || "");
-        tr.setAttribute("data-date", a.date.split("T")[0]);
+        tr.setAttribute("data-jour", a.jour || "");
+        tr.setAttribute("data-date", a.date ? a.date.split("T")[0] : "");
         tr.setAttribute("data-plage", a.plageHoraire);
+
+        // Récupérer les charges horaires
+        var chargeProf = 0;
+        var chargeSalle = 0;
+        
+        if (a.id_professeur && a.id_semestre) {
+            try {
+                var resChargeProf = await fetch("/api/professeurs/" + a.id_professeur + "/charge-horaire?id_semestre=" + a.id_semestre);
+                if (resChargeProf.ok) {
+                    var dataChargeProf = await resChargeProf.json();
+                    chargeProf = dataChargeProf.charge_horaire;
+                }
+            } catch (e) {}
+        }
+        
+        if (a.id_salle && a.id_semestre) {
+            try {
+                var resChargeSalle = await fetch("/api/salles/" + a.id_salle + "/charge-horaire?id_semestre=" + a.id_semestre);
+                if (resChargeSalle.ok) {
+                    var dataChargeSalle = await resChargeSalle.json();
+                    chargeSalle = dataChargeSalle.charge_horaire;
+                }
+            } catch (e) {}
+        }
+
+        // Créer les barres visuelles
+        var salleHtml = a.salle ? creerBarreChargeHtml(a.salle.code, chargeSalle, 50) : '<div>—</div>';
+        var profHtml = profNom !== "—" ? creerBarreChargeHtml(profNom, chargeProf, 30) : '<div>—</div>';
 
         tr.innerHTML =
             '<td>' + (a.cours ? a.cours.code + ' - ' + a.cours.nom : '') + '</td>' +
-            '<td>' + (a.salle ? a.salle.code : '') + '</td>' +
-            '<td>' + profCell + '</td>' +
-            '<td>' + dateStr + '</td>' +
+            '<td>' + salleHtml + '</td>' +
+            '<td>' + profHtml + '</td>' +
+            '<td>' + (a.id_semestre ? mapSemestres[a.id_semestre] || 'N/A' : 'N/A') + '</td>' +
+            '<td>' + dateJourStr + '</td>' +
             '<td>' + a.plageHoraire + '</td>' +
             '<td><div class="actions-cell">' +
                 '<button class="btn btn-modifier" onclick="modifierAffectation(' + a.id + ')">Modifier</button>' +
@@ -96,6 +159,17 @@ async function chargerAffectations() {
 
         tbody.appendChild(tr);
     });
+}
+
+// --- Créer une barre de charge visuelle HTML ---
+function creerBarreChargeHtml(label, heures, max) {
+    var pourcent = Math.min(100, (heures / max) * 100);
+    var html = '<div style="font-size: 0.9rem; font-weight: 500;">' + label + '</div>';
+    html += '<div class="charge-bar-wrapper" title="' + heures + 'h de ' + max + 'h">';
+    html += '<div class="charge-bar" style="width: ' + pourcent + '%;">' + Math.round(pourcent) + '%</div>';
+    html += '</div>';
+    html += '<div style="font-size: 0.8rem; color: #666;">' + heures + 'h/' + max + 'h</div>';
+    return html;
 }
 
 // --- Créer une nouvelle affectation (soumettre le formulaire) ---
@@ -116,9 +190,11 @@ formAffectation.addEventListener("submit", async function (event) {
     }
 
     var data = {
+        id_semestre: parseInt(selectSemestre.value) || null,
         id_cours: parseInt(selectCours.value),
         id_salle: parseInt(selectSalle.value),
-        date: document.getElementById("date").value,
+        jour: selectJour.value ? selectJour.value.toString() : null,
+        id_professeur: selectProfesseur.value ? parseInt(selectProfesseur.value) : null,
         plageHoraire: debut + "-" + fin,
     };
 
@@ -240,7 +316,31 @@ window.modifierAffectation = async function (id) {
 
     // Date et heures
     document.getElementById("mod-id").value = id;
-    document.getElementById("mod-date").value = tr.getAttribute("data-date");
+    
+    // Déterminer si c'est une affectation par jour ou par date
+    var jour = tr.getAttribute("data-jour");
+    var date = tr.getAttribute("data-date");
+    
+    if (jour && jour !== "") {
+        // Affectation récurrente (par jour de la semaine)
+        document.getElementById("mod-jour").value = jour;
+        document.getElementById("mod-date").value = "";
+        document.getElementById("mod-jour").disabled = false;
+        document.getElementById("mod-date").disabled = true;
+    } else if (date && date !== "") {
+        // Affectation ponctuelle (par date)
+        document.getElementById("mod-jour").value = "";
+        document.getElementById("mod-date").value = date;
+        document.getElementById("mod-jour").disabled = true;
+        document.getElementById("mod-date").disabled = false;
+    } else {
+        // Aucun des deux (à déterminer)
+        document.getElementById("mod-jour").value = "";
+        document.getElementById("mod-date").value = "";
+        document.getElementById("mod-jour").disabled = false;
+        document.getElementById("mod-date").disabled = false;
+    }
+    
     remplirSelectHeures(document.getElementById("mod-debut"), "Début", currentPlage[0] || "");
     remplirSelectHeures(document.getElementById("mod-fin"), "Fin", currentPlage[1] || "");
 
@@ -261,18 +361,27 @@ document.getElementById("mod-valider").onclick = async function () {
     var debut = document.getElementById("mod-debut").value;
     var fin = document.getElementById("mod-fin").value;
     var id = document.getElementById("mod-id").value;
+    var jour = document.getElementById("mod-jour").value;
+    var date = document.getElementById("mod-date").value;
 
     if (!debut || !fin) { alert("Plage horaire incomplète."); return; }
     if (debut >= fin) { alert("L'heure de fin doit être après l'heure de début."); return; }
+    if (!jour && !date) { alert("Vous devez sélectionner un jour ou une date."); return; }
 
     var profVal = document.getElementById("mod-prof").value;
     var data = {
         id_cours: parseInt(document.getElementById("mod-cours").value),
         id_salle: parseInt(document.getElementById("mod-salle").value),
         id_professeur: profVal ? parseInt(profVal) : null,
-        date: document.getElementById("mod-date").value,
         plageHoraire: debut + "-" + fin,
     };
+    
+    // Ajouter soit jour soit date selon ce qui est fourni
+    if (jour && jour !== "") {
+        data.jour = jour.toString();
+    } else if (date && date !== "") {
+        data.date = date;
+    }
 
     var response = await fetch("/api/affectations/" + id, {
         method: "PUT",
@@ -291,6 +400,8 @@ document.getElementById("mod-valider").onclick = async function () {
 };
 
 // --- Démarrage : charger les données ---
+chargerSelectSemestres();
 chargerSelectCours();
 chargerSelectSalles();
+chargerSelectProfesseurs();
 chargerAffectations();

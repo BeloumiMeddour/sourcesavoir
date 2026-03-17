@@ -1,5 +1,7 @@
 import { isEmailValid, isPasswordValid } from "./validation.js";
 
+const inputNom = document.getElementById("input-nom");
+const inputPrenom = document.getElementById("input-prenom");
 const inputCourriel = document.getElementById("input-courriel");
 const inputMotDePasse = document.getElementById("input-mot-de-passe");
 const formAuth = document.getElementById("form-auth");
@@ -12,6 +14,8 @@ async function inscription(event) {
     // que celles spécifié dans les configuration de
     // passport dans le fichier "auth.js"
     const data = {
+        nom: inputNom.value,
+        prenom: inputPrenom.value,
         email: inputCourriel.value,
         password: inputMotDePasse.value,
     };
@@ -20,6 +24,16 @@ async function inscription(event) {
     erreurs.innerText = "";
 
     // Validation cliente
+    if (!data.nom.trim()) {
+        erreurs.innerText = "Le nom est requis.";
+        return;
+    }
+
+    if (!data.prenom.trim()) {
+        erreurs.innerText = "Le prénom est requis.";
+        return;
+    }
+
     if (!isEmailValid(data.email)) {
         erreurs.innerText = "Le courriel n'est pas valide.";
         return;
@@ -42,6 +56,8 @@ async function inscription(event) {
     if (response.ok) {
         // Si l'authentification est réussi, on
         // redirige vers une autre page
+        inputNom.value = "";
+        inputPrenom.value = "";
         inputCourriel.value = "";
         inputMotDePasse.value = "";
         erreurs.innerText =
