@@ -35,17 +35,6 @@ const getDisponibilitesByProfesseur = async (id_professeur) => {
 };
 
 /**
- * Retourne une disponibilité par son ID
- * @param {number} id
- * @returns la disponibilité correspondante ou null
- */
-const getDisponibiliteById = async (id) => {
-    return await prisma.disponibilite.findUnique({
-        where: { id: id },
-    });
-};
-
-/**
  * Met à jour une disponibilité
  * @param {number} id
  * @param {Object} dispoData - Les nouvelles données
@@ -92,7 +81,6 @@ const deleteDisponibilite = async (id) => {
 export {
     addDisponibilite,
     getDisponibilitesByProfesseur,
-    getDisponibiliteById,
     updateDisponibilite,
     deleteDisponibilite,
 };
