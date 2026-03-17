@@ -1273,3 +1273,61 @@ form {
         align-items: stretch;
     }
 }
+
+/* ===========================
+   BARRES DE CHARGE HORAIRE
+=========================== */
+
+.charge-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 150px;
+}
+
+.charge-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.charge-item-label {
+    color: var(--gris-fonce);
+    margin-right: 0.5rem;
+    flex-grow: 1;
+}
+
+.charge-bar-wrapper {
+    flex-grow: 1;
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    position: relative;
+}
+
+.charge-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60 0%, #f39c12 50%, #e74c3c 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 4px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.charge-hours {
+    margin-left: 0.5rem;
+    min-width: 35px;
+    text-align: right;
+    color: var(--gris-fonce);
+    font-weight: 600;
+}

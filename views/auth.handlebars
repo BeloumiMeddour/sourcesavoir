@@ -2,6 +2,18 @@
     <form id="form-auth" novalidate>
         <h2>{{type}}</h2>
 
+        {{#if isInscription}}
+        <label>
+            Nom
+            <input type="text" id="input-nom" placeholder="Votre nom" />
+        </label>
+
+        <label>
+            Prénom
+            <input type="text" id="input-prenom" placeholder="Votre prénom" />
+        </label>
+        {{/if}}
+
         <label>
             Courriel
             <input type="email" id="input-courriel" placeholder="exemple@lacite.ca" />

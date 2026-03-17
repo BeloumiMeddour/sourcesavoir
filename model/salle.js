@@ -103,22 +103,10 @@ const deleteSalle = async (id) => {
     return true;
 };
 
-/**
- * Retourne les salles par code
- * @param {string} code
- * @returns la salle correspondante ou null
- */
-const getSalleByCode = async (code) => {
-    return await prisma.salle.findUnique({
-        where: { code: code },
-    });
-};
-
 export {
     addSalle,
     getSalles,
     getSalleById,
-    getSalleByCode,
     getSallesByType,
     updateSalle,
     deleteSalle,
