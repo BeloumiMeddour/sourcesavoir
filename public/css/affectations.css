@@ -10,6 +10,70 @@
 }
 
 /* ===========================
+   BADGE INFO PROFESSEUR
+=========================== */
+
+#info-prof-dispo {
+    margin-top: 0.4rem;
+    min-height: 1.5rem;
+}
+
+.info-prof-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.info-prof-ok {
+    background-color: var(--vert-clair);
+    color: var(--vert-fonce);
+    border-left: 3px solid var(--vert);
+}
+
+.info-prof-indispo {
+    background-color: var(--rouge-clair);
+    color: var(--rouge);
+    border-left: 3px solid var(--rouge);
+}
+
+/* ===========================
+   FILTRES LISTE AFFECTATIONS
+=========================== */
+
+.filtres-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.filtres-row select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--gris-bord);
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    background: #fff;
+    min-width: 150px;
+}
+
+.btn-secondary {
+    background: var(--gris-clair);
+    color: var(--texte);
+    border: 1px solid var(--gris-bord);
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.88rem;
+}
+
+.btn-secondary:hover {
+    background: var(--gris-bord);
+}
+
+/* ===========================
    RESPONSIVE AFFECTATIONS
 =========================== */
 

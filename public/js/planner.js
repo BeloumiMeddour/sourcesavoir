@@ -91,7 +91,6 @@ async function chargerSemestres() {
             semestreActif = parseInt(this.value) || null;
             if (semestreActif) {
                 chargerJoursFeeries(semestreActif);
-                mettreAJourChargesHoraires(); // Charger les charges horaires du nouveau semestre
             } else {
                 joursFeeries = [];
             }
@@ -114,110 +113,32 @@ async function chargerJoursFeeries(id_semestre) {
     }
 }
 
-// --- Charger les filtres (salles et professeurs) avec charge horaire ---
+// --- Charger les filtres (salles et professeurs) ---
 
 async function chargerFiltres() {
     try {
-        // Charger les salles
         var resSalles = await fetch("/api/salles");
-        if (!resSalles.ok) {
-            console.error("Erreur API salles:", resSalles.status);
-            return;
-        }
+        if (!resSalles.ok) return;
         var salles = await resSalles.json();
         salles.forEach(function (s) {
             var opt = document.createElement("option");
             opt.value = s.id;
             opt.textContent = s.code;
-            opt.dataset.salleId = s.id;
-            opt.title = "Charge horaire: à calculer";
             filtreSalle.appendChild(opt);
         });
 
-        // Charger les professeurs
         var resProfs = await fetch("/api/professeurs");
-        if (!resProfs.ok) {
-            console.error("Erreur API professeurs:", resProfs.status);
-            return;
-        }
+        if (!resProfs.ok) return;
         var profs = await resProfs.json();
         profs.forEach(function (p) {
             var opt = document.createElement("option");
             opt.value = p.id;
             opt.textContent = p.prenom + " " + p.nom;
-            opt.dataset.profId = p.id;
-            opt.title = "Charge horaire: à calculer";
             filtreProf.appendChild(opt);
         });
-
-        // Ajouter les event listeners pour mettre à jour les charges horaires lors du changement de semestre
-        document.getElementById("select-semestre").addEventListener("change", async function() {
-            await mettreAJourChargesHoraires();
-        });
-
     } catch (error) {
         console.error("Erreur lors du chargement des filtres:", error);
     }
-}
-
-// --- Mettre à jour les charges horaires selon le semestre sélectionné ---
-
-async function mettreAJourChargesHoraires() {
-    if (!semestreActif) return;
-
-    // Mettre à jour les salles
-    var sallesOptions = filtreSalle.querySelectorAll("option[data-salle-id]");
-    sallesOptions.forEach(async function(opt) {
-        try {
-            var res = await fetch("/api/salles/" + opt.dataset.salleId + "/charge-horaire?id_semestre=" + semestreActif);
-            if (res.ok) {
-                var data = await res.json();
-                var charge = data.charge_horaire;
-                var barreSalle = creerBarreCharge(charge, 50); // 50h/semaine max
-                opt.textContent = opt.textContent.split("(")[0] + barreSalle;
-                opt.title = "Charge: " + charge + "h/semaine";
-            }
-        } catch (error) {
-            console.error("Erreur charge salle:", error);
-        }
-    });
-
-    // Mettre à jour les professeurs
-    var profsOptions = filtreProf.querySelectorAll("option[data-prof-id]");
-    profsOptions.forEach(async function(opt) {
-        try {
-            var res = await fetch("/api/professeurs/" + opt.dataset.profId + "/charge-horaire?id_semestre=" + semestreActif);
-            if (res.ok) {
-                var data = await res.json();
-                var charge = data.charge_horaire;
-                var barreProf = creerBarreCharge(charge, 30); // 30h/semaine max
-                var nameText = opt.textContent.split("(")[0];
-                opt.textContent = nameText + barreProf;
-                opt.title = "Charge: " + charge + "h/semaine";
-            }
-        } catch (error) {
-            console.error("Erreur charge prof:", error);
-        }
-    });
-}
-
-// --- Créer une barre de charge visuelle ---
-
-function creerBarreCharge(heures, max) {
-    var pourcent = Math.min(100, (heures / max) * 100);
-    var couleur = pourcent < 50 ? "#4CAF50" : pourcent < 80 ? "#FF9800" : "#f44336";
-    
-    // Retourner une barre simple en texte
-    var barreTexte = " (";
-    for (var i = 0; i < 10; i++) {
-        if (i < Math.round(pourcent / 10)) {
-            barreTexte += "█";
-        } else {
-            barreTexte += "░";
-        }
-    }
-    barreTexte += " " + heures + "h)";
-    return barreTexte;
 }
 
 // --- Charger les affectations depuis l'API ---
