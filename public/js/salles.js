@@ -1,11 +1,14 @@
 // === GESTION DES SALLES ===
 
+import { afficherMessage } from './utils.js';
+
 const formSalle = document.getElementById("form-salle");
 const msgSalle = document.getElementById("msg-salle");
 const tbody = document.querySelector("#table-salles tbody");
 const btnToggle = document.getElementById("btn-toggle-form");
 const formCard = document.getElementById("form-card");
 const searchInput = document.getElementById("search-salles");
+const modale = document.getElementById("modale-modifier");
 
 // Toggle formulaire
 btnToggle.addEventListener("click", function () {
@@ -20,12 +23,6 @@ searchInput.addEventListener("input", function () {
         tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
     });
 });
-
-function afficherMessage(element, texte, type) {
-    element.innerText = texte;
-    element.className = "message " + type;
-    setTimeout(function () { element.innerText = ""; element.className = "message"; }, 5000);
-}
 
 async function chargerSalles() {
     var response = await fetch("/api/salles");
@@ -79,31 +76,23 @@ formSalle.addEventListener("submit", async function (event) {
     }
 });
 
+// Fermer la modale
+function fermerModale() {
+    modale.style.display = "none";
+}
+
+document.getElementById("mod-annuler").onclick = fermerModale;
+modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+
 window.modifierSalle = function (id) {
     var tr = document.querySelector('tr[data-id="' + id + '"]');
     if (!tr) return;
 
-    var ancien = document.getElementById("modale-modifier");
-    if (ancien) ancien.remove();
+    document.getElementById("mod-code").value = tr.getAttribute("data-code") || "";
+    document.getElementById("mod-type").value = tr.getAttribute("data-type") || "";
+    document.getElementById("mod-capacite").value = tr.getAttribute("data-capacite") || "";
 
-    var modale = document.createElement("div");
-    modale.id = "modale-modifier";
-    modale.className = "modale-overlay";
-    modale.innerHTML =
-        '<div class="modale-contenu">' +
-            '<h3>Modifier la salle</h3>' +
-            '<div class="modale-champ"><label>Nom de la salle</label><input type="text" id="mod-code" value="' + (tr.getAttribute("data-code") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Type</label><input type="text" id="mod-type" value="' + (tr.getAttribute("data-type") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Capacité</label><input type="number" id="mod-capacite" value="' + (tr.getAttribute("data-capacite") || '') + '"></div>' +
-            '<div class="modale-actions">' +
-                '<button class="btn btn-modifier" id="mod-valider">Valider</button>' +
-                '<button class="btn btn-supprimer" id="mod-annuler">Annuler</button>' +
-            '</div>' +
-        '</div>';
-    document.body.appendChild(modale);
-
-    document.getElementById("mod-annuler").onclick = function () { modale.remove(); };
-    modale.addEventListener("click", function (e) { if (e.target === modale) modale.remove(); });
+    modale.style.display = "flex";
 
     document.getElementById("mod-valider").onclick = async function () {
         var data = {
@@ -116,7 +105,7 @@ window.modifierSalle = function (id) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        modale.remove();
+        fermerModale();
         if (response.ok) {
             afficherMessage(msgSalle, "Salle modifiée avec succès !", "succes");
             chargerSalles();

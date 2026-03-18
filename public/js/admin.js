@@ -1,11 +1,14 @@
 // === ADMINISTRATION - GESTION DES COMPTES ===
 
+import { afficherMessage } from './utils.js';
+
 const formUtilisateur = document.getElementById("form-utilisateur");
 const msgAdmin = document.getElementById("msg-admin");
 const tbody = document.querySelector("#table-utilisateurs tbody");
 const btnToggle = document.getElementById("btn-toggle-form");
 const formCard = document.getElementById("form-card");
 const searchInput = document.getElementById("search-users");
+const modale = document.getElementById("modale-modifier");
 
 // Toggle formulaire
 btnToggle.addEventListener("click", function () {
@@ -20,13 +23,6 @@ searchInput.addEventListener("input", function () {
         tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
     });
 });
-
-// Afficher un message
-function afficherMessage(element, texte, type) {
-    element.innerText = texte;
-    element.className = "message " + type;
-    setTimeout(function () { element.innerText = ""; element.className = "message"; }, 5000);
-}
 
 // Charger la liste des utilisateurs
 async function chargerUtilisateurs() {
@@ -86,39 +82,25 @@ formUtilisateur.addEventListener("submit", async function (event) {
     }
 });
 
-// Modifier le rôle
+// Fermer la modale
+function fermerModale() {
+    modale.style.display = "none";
+}
+
+document.getElementById("mod-annuler").onclick = fermerModale;
+modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+
+// Modifier un utilisateur
 window.modifierRole = function (id) {
     var tr = document.querySelector('tr[data-id="' + id + '"]');
     if (!tr) return;
 
-    var ancien = document.getElementById("modale-modifier");
-    if (ancien) ancien.remove();
+    document.getElementById("mod-email").value = tr.getAttribute("data-email") || "";
+    document.getElementById("mod-nom").value = tr.getAttribute("data-nom") || "";
+    document.getElementById("mod-prenom").value = tr.getAttribute("data-prenom") || "";
+    document.getElementById("mod-role").value = tr.getAttribute("data-role") || "user";
 
-    var modale = document.createElement("div");
-    modale.id = "modale-modifier";
-    modale.className = "modale-overlay";
-    modale.innerHTML =
-        '<div class="modale-contenu">' +
-            '<h3>Modifier l\'utilisateur</h3>' +
-            '<div class="modale-champ"><label>Email</label><input type="email" id="mod-email" value="' + (tr.getAttribute("data-email") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Nom</label><input type="text" id="mod-nom" value="' + (tr.getAttribute("data-nom") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Prénom</label><input type="text" id="mod-prenom" value="' + (tr.getAttribute("data-prenom") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Rôle</label>' +
-                '<select id="mod-role">' +
-                    '<option value="user"' + (tr.getAttribute("data-role") === 'user' ? ' selected' : '') + '>user</option>' +
-                    '<option value="responsable"' + (tr.getAttribute("data-role") === 'responsable' ? ' selected' : '') + '>responsable</option>' +
-                    '<option value="admin"' + (tr.getAttribute("data-role") === 'admin' ? ' selected' : '') + '>admin</option>' +
-                '</select>' +
-            '</div>' +
-            '<div class="modale-actions">' +
-                '<button class="btn btn-modifier" id="mod-valider">Valider</button>' +
-                '<button class="btn btn-supprimer" id="mod-annuler">Annuler</button>' +
-            '</div>' +
-        '</div>';
-    document.body.appendChild(modale);
-
-    document.getElementById("mod-annuler").onclick = function () { modale.remove(); };
-    modale.addEventListener("click", function (e) { if (e.target === modale) modale.remove(); });
+    modale.style.display = "flex";
 
     document.getElementById("mod-valider").onclick = async function () {
         var data = {
@@ -132,7 +114,7 @@ window.modifierRole = function (id) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        modale.remove();
+        fermerModale();
         if (response.ok) {
             afficherMessage(msgAdmin, "Utilisateur modifié avec succès !", "succes");
             chargerUtilisateurs();

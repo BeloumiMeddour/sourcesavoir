@@ -394,8 +394,8 @@ const calculerChargeHoraireProfesseur = async (id_professeur, id_semestre) => {
         const [debut, fin] = aff.plageHoraire.split("-").map(heureEnMinutes);
         const minutes = fin - debut;
         if (aff.jour !== null && aff.jour !== undefined) {
-            // Affectation par jour : multiplier par le nombre de semaines (approximation : ~4 semaines)
-            totalMinutes += minutes * 4;
+            // Affectation par jour : 8 jours par semaine
+            totalMinutes += minutes * 8;
         } else {
             // Affectation unique
             totalMinutes += minutes;
@@ -424,8 +424,8 @@ const calculerChargeHoraireSalle = async (id_salle, id_semestre) => {
         const [debut, fin] = aff.plageHoraire.split("-").map(heureEnMinutes);
         const minutes = fin - debut;
         if (aff.jour !== null && aff.jour !== undefined) {
-            // Affectation par jour : multiplier par le nombre de semaines
-            totalMinutes += minutes * 4;
+            // Affectation par jour : 6 jours par semaine
+            totalMinutes += minutes * 6;
         } else {
             // Affectation unique
             totalMinutes += minutes;

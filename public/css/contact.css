@@ -1,0 +1,66 @@
+/* ===========================
+   CONTACT
+=========================== */
+
+.contact {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    width: 100%;
+}
+
+.propos, .infos {
+    flex: 1;
+}
+
+.propos button,
+.propos input[type="submit"],
+.infos button {
+    background-color: var(--rouge-lacite);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.propos button:hover,
+.propos input[type="submit"]:hover,
+.infos button:hover {
+    background-color: var(--rouge-lacite-fonce);
+}
+
+#contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#contact-form input,
+#contact-form textarea {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--gris-bordure);
+    border-radius: 6px;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+#contact-form input:focus,
+#contact-form textarea:focus {
+    outline: none;
+    border-color: var(--rouge-lacite);
+    box-shadow: 0 0 0 3px rgba(139, 35, 50, 0.12);
+}
+
+/* ===========================
+   RESPONSIVE CONTACT
+=========================== */
+
+@media (max-width: 768px) {
+    .contact {
+        flex-direction: column;
+    }
+}
