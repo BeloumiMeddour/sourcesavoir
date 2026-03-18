@@ -44,6 +44,7 @@ async function chargerProfesseurs() {
             "<td>" + p.prenom + "</td>" +
             "<td>" + p.specialite + "</td>" +
             '<td><div class="actions-cell">' +
+                '<button class="btn btn-vert" onclick="ouvrirModalDisponibilites(' + p.id + ', \'' + p.prenom + ' ' + p.nom + '\')">Disponibilités</button>' +
                 '<button class="btn btn-modifier" onclick="modifierProfesseur(' + p.id + ')">Modifier</button>' +
                 '<button class="btn btn-supprimer" onclick="supprimerProfesseur(' + p.id + ')">Supprimer</button>' +
             '</div></td>';
@@ -143,6 +144,184 @@ window.supprimerProfesseur = async function (id) {
         var err = await response.json();
         afficherMessage(msgProfesseur, err.error || "Erreur.", "erreur");
     }
+};
+
+// === GESTION DES DISPONIBILITÉS ===
+
+var idProfActuel = null;
+var jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+var heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+
+window.ouvrirModalDisponibilites = async function (id, nomProf) {
+    idProfActuel = id;
+    document.getElementById("dispo-prof-nom").textContent = nomProf;
+    document.getElementById("modale-disponibilites").style.display = "flex";
+    
+    // Afficher le tableau
+    await afficherTableauDisponibilites(id);
+};
+
+window.fermerModalDisponibilites = function () {
+    document.getElementById("modale-disponibilites").style.display = "none";
+};
+
+async function afficherTableauDisponibilites(id) {
+    // Récupérer les disponibilités existantes groupées par jour
+    var response = await fetch("/api/disponibilites/professeur/" + id);
+    var disponibilites = await response.json();
+    
+    var dispoParJour = {};
+    jours.forEach(j => { dispoParJour[j] = null; });
+    
+    disponibilites.forEach(d => {
+        if (dispoParJour[d.jour] === null) {
+            var parts = d.plageHoraire.split("-");
+            dispoParJour[d.jour] = { debut: parts[0], fin: parts[1] };
+        }
+    });
+    
+    var tbody = document.getElementById("tableau-disponibilites");
+    tbody.innerHTML = "";
+    
+    jours.forEach(function (jour) {
+        var tr = document.createElement("tr");
+        tr.style.cssText = "border-bottom: 1px solid var(--gris-bordure);";
+        
+        var dispo = dispoParJour[jour];
+        var debut = dispo ? dispo.debut : "08:00";
+        var fin = dispo ? dispo.fin : "22:00";
+        
+        tr.innerHTML = 
+            '<td style="padding: 0.75rem; font-weight: 500;">' + jour + '</td>' +
+            '<td style="padding: 0.75rem;"><select data-jour="' + jour + '" data-type="debut" style="width: 100%; padding: 0.5rem;">' + 
+                heures.map(h => '<option value="' + h + '" ' + (debut === h ? 'selected' : '') + '>' + h + '</option>').join('') +
+            '</select></td>' +
+            '<td style="padding: 0.75rem;"><select data-jour="' + jour + '" data-type="fin" style="width: 100%; padding: 0.5rem;">' + 
+                heures.map(h => '<option value="' + h + '" ' + (fin === h ? 'selected' : '') + '>' + h + '</option>').join('') +
+            '</select></td>' +
+            '<td style="padding: 0.75rem; text-align: center;"><label><input type="checkbox" class="jour-actif" data-jour="' + jour + '" ' + (dispo ? 'checked' : '') + ' /> Actif</label></td>';
+        
+        tbody.appendChild(tr);
+    });
+}
+
+window.sauvegarderDisponibilites = async function () {
+    try {
+        console.log("Sauvegarde des disponibilités pour professeur:", idProfActuel);
+
+        var responseGet = await fetch("/api/disponibilites/professeur/" + idProfActuel);
+        var disponibilites = await responseGet.json();
+        console.log("Disponibilités actuelles:", disponibilites);
+
+        // Indexer les dispos actuelles par jour pour la validation
+        var dispoActuelleParJour = {};
+        disponibilites.forEach(function (d) {
+            var parts = d.plageHoraire.split("-");
+            dispoActuelleParJour[d.jour] = { debut: parts[0], fin: parts[1] };
+        });
+
+        // Récupérer les jours cochés et leurs horaires
+        var checkboxes = document.querySelectorAll(".jour-actif:checked");
+        console.log("Jours cochés:", checkboxes.length);
+
+        // Validation avant toute modification
+        for (var cb of checkboxes) {
+            var jour = cb.getAttribute("data-jour");
+            var debutSelect = document.querySelector("select[data-jour='" + jour + "'][data-type='debut']");
+            var finSelect = document.querySelector("select[data-jour='" + jour + "'][data-type='fin']");
+            if (!debutSelect || !finSelect) continue;
+
+            var debut = debutSelect.value;
+            var fin = finSelect.value;
+
+            if (debut >= fin) {
+                afficherMessage(document.getElementById("msg-dispo"), "L'heure de fin doit être après le début pour " + jour + ".", "erreur");
+                return;
+            }
+
+            var ancienne = dispoActuelleParJour[jour];
+            if (ancienne) {
+                // Empêcher d'élargir la plage au-delà de ce qui a été déclaré
+                if (debut < ancienne.debut || fin > ancienne.fin) {
+                    afficherMessage(
+                        document.getElementById("msg-dispo"),
+                        "Impossible d'élargir la disponibilité de " + jour + " au-delà de " + ancienne.debut + "-" + ancienne.fin + ".",
+                        "erreur"
+                    );
+                    return;
+                }
+            }
+        }
+
+        // Supprimer toutes les disponibilités
+        for (var dispo of disponibilites) {
+            console.log("Suppression de:", dispo.id);
+            var delResponse = await fetch("/api/disponibilites/" + dispo.id, { method: "DELETE" });
+            if (!delResponse.ok) {
+                var errText = await delResponse.text();
+                console.error("Erreur suppression:", errText);
+                afficherMessage(document.getElementById("msg-dispo"), "Erreur lors de la suppression.", "erreur");
+                return;
+            }
+        }
+
+        for (var cb of checkboxes) {
+            var jour = cb.getAttribute("data-jour");
+
+            // Chercher les selects avec data-jour et data-type
+            var debutSelect = document.querySelector("select[data-jour='" + jour + "'][data-type='debut']");
+            var finSelect = document.querySelector("select[data-jour='" + jour + "'][data-type='fin']");
+
+            if (!debutSelect || !finSelect) {
+                console.error("Selects not found for jour:", jour);
+                afficherMessage(document.getElementById("msg-dispo"), "Erreur: sélecteurs non trouvés pour " + jour, "erreur");
+                return;
+            }
+
+            var debut = debutSelect.value;
+            var fin = finSelect.value;
+
+            console.log(jour + ": " + debut + " - " + fin);
+            
+            var postResponse = await fetch("/api/disponibilites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    jour: jour,
+                    plageHoraire: debut + "-" + fin,
+                    id_professeur: idProfActuel
+                })
+            });
+            
+            if (!postResponse.ok) {
+                var errJson = await postResponse.json().catch(() => ({}));
+                var errMsg = errJson.error || "Erreur lors de l'ajout de " + jour;
+                console.error("Erreur ajout pour " + jour + ":", errMsg);
+                afficherMessage(document.getElementById("msg-dispo"), errMsg, "erreur");
+                return;
+            }
+            console.log("Ajouté: " + jour);
+        }
+        
+        afficherMessage(document.getElementById("msg-dispo"), "Disponibilités enregistrées!", "succes");
+        setTimeout(() => {
+            fermerModalDisponibilites();
+            chargerProfesseurs();
+        }, 1000);
+    } catch (e) {
+        console.error("Erreur:", e);
+        afficherMessage(document.getElementById("msg-dispo"), "Erreur: " + e.message, "erreur");
+    }
+};
+
+window.cocherTous = function () {
+    var checkboxes = document.querySelectorAll(".jour-actif");
+    checkboxes.forEach(cb => { cb.checked = true; });
+};
+
+window.decocherTous = function () {
+    var checkboxes = document.querySelectorAll(".jour-actif");
+    checkboxes.forEach(cb => { cb.checked = false; });
 };
 
 chargerProfesseurs();

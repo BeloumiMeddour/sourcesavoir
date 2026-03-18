@@ -117,9 +117,10 @@ async function chargerAffectations() {
         tr.setAttribute("data-date", a.date ? a.date.split("T")[0] : "");
         tr.setAttribute("data-plage", a.plageHoraire);
 
-        // Récupérer les charges horaires
+        // Récupérer les charges horaires et disponibilités
         var chargeProf = 0;
         var chargeSalle = 0;
+        var disponibilitesProf = [];
         
         if (a.id_professeur && a.id_semestre) {
             try {
@@ -127,6 +128,12 @@ async function chargerAffectations() {
                 if (resChargeProf.ok) {
                     var dataChargeProf = await resChargeProf.json();
                     chargeProf = dataChargeProf.charge_horaire;
+                }
+                
+                // Charger les disponibilités
+                var resDisponibilites = await fetch("/api/disponibilites/professeur/" + a.id_professeur);
+                if (resDisponibilites.ok) {
+                    disponibilitesProf = await resDisponibilites.json();
                 }
             } catch (e) {}
         }
@@ -143,7 +150,24 @@ async function chargerAffectations() {
 
         // Créer les barres visuelles
         var salleHtml = a.salle ? creerBarreChargeHtml(a.salle.code, chargeSalle, 50) : '<div>—</div>';
-        var profHtml = profNom !== "—" ? creerBarreChargeHtml(profNom, chargeProf, 30) : '<div>—</div>';
+        
+        // Créer l'affichage du professeur avec disponibilités
+        var profHtml = '<div>—</div>';
+        if (profNom !== "—") {
+            profHtml = creerBarreChargeHtml(profNom, chargeProf, 30);
+            
+            // Ajouter les disponibilités si elles existent
+            if (disponibilitesProf.length > 0 && a.jour) {
+                var nomJour = getNomJour(a.jour);
+                var dispo_jour = disponibilitesProf.find(d => d.jour === nomJour);
+                
+                if (dispo_jour) {
+                    profHtml += '<div style="font-size: 0.75rem; color: #27ae60; margin-top: 0.25rem;">✓ Dispo: ' + dispo_jour.plageHoraire + '</div>';
+                } else {
+                    profHtml += '<div style="font-size: 0.75rem; color: #e74c3c; margin-top: 0.25rem;">✗ Pas dispo ce jour</div>';
+                }
+            }
+        }
 
         tr.innerHTML =
             '<td>' + (a.cours ? a.cours.code + ' - ' + a.cours.nom : '') + '</td>' +
@@ -164,9 +188,20 @@ async function chargerAffectations() {
 // --- Créer une barre de charge visuelle HTML ---
 function creerBarreChargeHtml(label, heures, max) {
     var pourcent = Math.min(100, (heures / max) * 100);
+    
+    // Déterminer la couleur selon les heures réelles (0-60h vert, 60-90h orange, 90h+ rouge)
+    var couleur;
+    if (heures < 60) {
+        couleur = "#27ae60"; // Vert (0-60h)
+    } else if (heures < 90) {
+        couleur = "#f39c12"; // Orange (60-90h)
+    } else {
+        couleur = "#e74c3c"; // Rouge (90h+)
+    }
+    
     var html = '<div style="font-size: 0.9rem; font-weight: 500;">' + label + '</div>';
     html += '<div class="charge-bar-wrapper" title="' + heures + 'h de ' + max + 'h">';
-    html += '<div class="charge-bar" style="width: ' + pourcent + '%;">' + Math.round(pourcent) + '%</div>';
+    html += '<div class="charge-bar" style="width: ' + pourcent + '%; background: ' + couleur + ';">' + Math.round(pourcent) + '%</div>';
     html += '</div>';
     html += '<div style="font-size: 0.8rem; color: #666;">' + heures + 'h/' + max + 'h</div>';
     return html;
@@ -187,6 +222,37 @@ formAffectation.addEventListener("submit", async function (event) {
     if (debut >= fin) {
         afficherMessage(msgAffectation, "L'heure de fin doit être après l'heure de début.", "erreur");
         return;
+    }
+
+    // Vérifier la disponibilité du professeur si un professeur est sélectionné
+    if (selectProfesseur.value) {
+        var jour = selectJour.value;
+        var nomJourSelect = getNomJour(jour);
+        
+        try {
+            var resDispos = await fetch("/api/disponibilites/professeur/" + parseInt(selectProfesseur.value));
+            var disponibilites = await resDispos.json();
+            
+            // Chercher la disponibilité du jour sélectionné
+            var dispo_jour = disponibilites.find(d => d.jour === nomJourSelect);
+            
+            if (!dispo_jour) {
+                afficherMessage(msgAffectation, "Ce professeur n'est pas disponible le " + nomJourSelect + ".", "erreur");
+                return;
+            }
+            
+            // Vérifier que la plage demandée est dans la plage de disponibilité
+            var plage = dispo_jour.plageHoraire.split("-");
+            var dispo_debut = plage[0];
+            var dispo_fin = plage[1];
+            
+            if (debut < dispo_debut || fin > dispo_fin) {
+                afficherMessage(msgAffectation, "Ce professeur n'est disponible le " + nomJourSelect + " que de " + dispo_debut + " à " + dispo_fin + ".", "erreur");
+                return;
+            }
+        } catch (e) {
+            console.log("Erreur lors de la vérification de disponibilité");
+        }
     }
 
     var data = {
@@ -268,9 +334,7 @@ function remplirSelect(select, items, valeurActuelle, getText) {
 
 // --- Remplir un <select> d'heures ---
 function remplirSelectHeures(select, label, valeurActuelle) {
-    var heures = ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30",
-        "12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30",
-        "16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+    var heures = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
     select.innerHTML = '<option value="">' + label + '</option>';
     heures.forEach(function (h) {
         var opt = document.createElement("option");
