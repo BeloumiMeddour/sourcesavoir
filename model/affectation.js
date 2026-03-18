@@ -121,6 +121,7 @@ const affecterCoursASalle = async (affectationData) => {
         if (profOccupe) {
             throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire");
         }
+
     }
 
     const newAffectation = await prisma.affectationCours.create({
@@ -186,6 +187,7 @@ const affecterCoursAuSemestre = async (affectationData) => {
         if (profOccupe) {
             throw new Error("Conflit : ce professeur est déjà assigné à un cours à ce jour et cette plage horaire");
         }
+
     }
 
     // Créer UNE SEULE affectation "template"
@@ -435,6 +437,78 @@ const calculerChargeHoraireSalle = async (id_salle, id_semestre) => {
     return Math.round(totalMinutes / 60); // Conversion en heures
 };
 
+/**
+ * Retourne tous les professeurs avec leur statut de disponibilité pour un créneau donné.
+ * Effectue seulement 2 requêtes DB (pas de N+1).
+ * @param {number} id_semestre
+ * @param {string} jour - "0" à "6" (0=Dimanche)
+ * @param {string} debut - ex: "09:00"
+ * @param {string} fin   - ex: "11:00"
+ * @returns tableau de professeurs avec statut: "disponible" | "hors_plage" | "pas_dispo" | "conflit" | "complet"
+ */
+const getProfesseursAvecDisponibilitePourSlot = async (id_semestre, jour, debut, fin) => {
+    const joursNoms = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    const nomJour = joursNoms[parseInt(jour)];
+    const plageDemandeStr = debut + "-" + fin;
+    const debutMin = heureEnMinutes(debut);
+    const finMin = heureEnMinutes(fin);
+
+    // 2 requêtes seulement pour tous les profs
+    const [professeurs, toutesAffectations] = await Promise.all([
+        prisma.professeur.findMany({ include: { disponibilites: true } }),
+        prisma.affectationCours.findMany({ where: { id_semestre: id_semestre } }),
+    ]);
+
+    return professeurs.map(function (prof) {
+        const affectationsProf = toutesAffectations.filter(a => a.id_professeur === prof.id);
+
+        // Disponibilité déclarée pour ce jour
+        const dispoJour = prof.disponibilites.find(d => d.jour === nomJour);
+
+        if (!dispoJour) {
+            return { id: prof.id, nom: prof.nom, prenom: prof.prenom, statut: "pas_dispo" };
+        }
+
+        // Vérifier que la plage demandée est dans la plage déclarée
+        const [dispoDebut, dispoFin] = dispoJour.plageHoraire.split("-");
+        const dispoDebutMin = heureEnMinutes(dispoDebut);
+        const dispoFinMin = heureEnMinutes(dispoFin);
+
+        if (debutMin < dispoDebutMin || finMin > dispoFinMin) {
+            return {
+                id: prof.id, nom: prof.nom, prenom: prof.prenom,
+                plageDeclaree: dispoJour.plageHoraire, statut: "hors_plage",
+            };
+        }
+
+        // Calculer les heures libres ce jour = fenêtre déclarée - déjà affectées ce jour
+        const affectationsJour = affectationsProf.filter(a => a.jour === jour.toString());
+        const minutesOccupees = affectationsJour.reduce(function (sum, a) {
+            const [d, f] = a.plageHoraire.split("-").map(heureEnMinutes);
+            return sum + (f - d);
+        }, 0);
+        const minutesDispo = dispoFinMin - dispoDebutMin;
+        const heuresLibres = Math.round((minutesDispo - minutesOccupees) / 60);
+        const dureeDemandeMin = finMin - debutMin;
+
+        // Vérifier les conflits (chevauchement)
+        const hasConflit = affectationsJour.some(a => plagesSeChevauchent(plageDemandeStr, a.plageHoraire));
+
+        let statut;
+        if (hasConflit) statut = "conflit";
+        else if (dureeDemandeMin > minutesDispo - minutesOccupees) statut = "complet";
+        else statut = "disponible";
+
+        return {
+            id: prof.id, nom: prof.nom, prenom: prof.prenom,
+            plageDeclaree: dispoJour.plageHoraire,
+            heuresLibres,
+            creneauxOccupes: affectationsJour.map(a => a.plageHoraire),
+            statut,
+        };
+    });
+};
+
 export {
     affecterCoursASalle,
     affecterCoursAuSemestre,
@@ -447,4 +521,5 @@ export {
     deleteAffectation,
     calculerChargeHoraireProfesseur,
     calculerChargeHoraireSalle,
+    getProfesseursAvecDisponibilitePourSlot,
 };

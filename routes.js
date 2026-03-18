@@ -46,7 +46,7 @@ import {
     updateAffectation,
     deleteAffectation,
     calculerChargeHoraireProfesseur,
-    calculerChargeHoraireSalle,
+    getProfesseursAvecDisponibilitePourSlot,
 } from "./model/affectation.js";
 
 import {
@@ -501,6 +501,20 @@ router.get("/api/professeurs", estAuthentifie, async (req, res) => {
     }
 });
 
+// Disponibilité de tous les profs pour un créneau donné
+router.get("/api/professeurs/disponibilite-semestre", estAuthentifie, async (req, res) => {
+    const { id_semestre, jour, debut, fin } = req.query;
+    if (!id_semestre || jour === undefined || !debut || !fin) {
+        return res.status(400).json({ error: "Paramètres requis: id_semestre, jour, debut, fin" });
+    }
+    try {
+        const result = await getProfesseursAvecDisponibilitePourSlot(parseInt(id_semestre), jour, debut, fin);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Obtenir un professeur par ID
 router.get("/api/professeurs/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
@@ -523,8 +537,27 @@ router.get("/api/professeurs/:id/charge-horaire", estAuthentifie, async (req, re
         if (!id_semestre) {
             return res.status(400).json({ error: "id_semestre requis" });
         }
-        const charge = await calculerChargeHoraireProfesseur(id, parseInt(id_semestre));
-        res.status(200).json({ charge_horaire: charge });
+        const prof = await getProfesseurById(id);
+        // Heures assignées par semaine (sans × 8)
+        const affectations = await (await import("./model/affectation.js")).getAffectationsByProfesseur(id);
+        const affSemestre = affectations.filter(a => a.id_semestre === parseInt(id_semestre));
+        let heuresAssignees = 0;
+        affSemestre.forEach(a => {
+            const [d, f] = a.plageHoraire.split("-").map(h => { const [hh,mm] = h.split(":").map(Number); return hh*60+mm; });
+            heuresAssignees += (f - d) / 60;
+        });
+        // Heures disponibles totales déclarées par semaine
+        const { getDisponibilitesByProfesseur } = await import("./model/disponibilite.js");
+        const dispos = await getDisponibilitesByProfesseur(id);
+        let heuresDispo = 0;
+        dispos.forEach(d => {
+            const [dd, df] = d.plageHoraire.split("-").map(h => { const [hh,mm] = h.split(":").map(Number); return hh*60+mm; });
+            heuresDispo += (df - dd) / 60;
+        });
+        res.status(200).json({
+            charge_horaire: Math.round(heuresAssignees * 10) / 10,
+            charge_max: heuresDispo > 0 ? Math.round(heuresDispo * 10) / 10 : null
+        });
     } catch (error) {
         res.status(500).json({ error: "Erreur lors du calcul de la charge: " + error.message });
     }
@@ -620,8 +653,19 @@ router.get("/api/salles/:id/charge-horaire", estAuthentifie, async (req, res) =>
         if (!id_semestre) {
             return res.status(400).json({ error: "id_semestre requis" });
         }
-        const charge = await calculerChargeHoraireSalle(id, parseInt(id_semestre));
-        res.status(200).json({ charge_horaire: charge });
+        // Heures assignées par semaine (sans multiplicateur)
+        const affectationsSalle = (await (await import("./model/affectation.js")).getAffectations())
+            .filter(a => a.id_salle === id && a.id_semestre === parseInt(id_semestre));
+        let heuresAssignees = 0;
+        affectationsSalle.forEach(a => {
+            const [d, f] = a.plageHoraire.split("-").map(h => { const [hh,mm] = h.split(":").map(Number); return hh*60+mm; });
+            heuresAssignees += (f - d) / 60;
+        });
+        const SALLE_MAX_HEBDO = 70; // 5j × 14h (08:00-22:00)
+        res.status(200).json({
+            charge_horaire: Math.round(heuresAssignees * 10) / 10,
+            charge_max: SALLE_MAX_HEBDO
+        });
     } catch (error) {
         res.status(500).json({ error: "Erreur lors du calcul de la charge: " + error.message });
     }
