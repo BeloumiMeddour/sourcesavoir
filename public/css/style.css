@@ -846,7 +846,31 @@ form {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 60vh;
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(100vh - var(--topbar-height));
+    background-image: url('/assets/arrierePlan.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    z-index: 100;
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
 }
 
 #form-auth {
@@ -858,6 +882,8 @@ form {
     padding: 2rem;
     border-radius: var(--radius);
     box-shadow: var(--ombre);
+    position: relative;
+    z-index: 10;
 }
 
 #form-auth h2 {

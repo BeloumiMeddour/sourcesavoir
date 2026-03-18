@@ -1,0 +1,103 @@
+/* ===========================
+   AUTH
+=========================== */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(100vh - var(--topbar-height));
+    background-image: url('/assets/arrierePlan.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    z-index: 100;
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+#form-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 360px;
+    background-color: var(--blanc);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--ombre);
+    position: relative;
+    z-index: 10;
+}
+
+#form-auth h2 {
+    text-align: center;
+    color: var(--rouge-lacite);
+    margin-bottom: 0.25rem;
+}
+
+#form-auth label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--gris-texte);
+}
+
+#form-auth label input {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--gris-bordure);
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+#form-auth label input:focus {
+    outline: none;
+    border-color: var(--rouge-lacite);
+    box-shadow: 0 0 0 3px rgba(139, 35, 50, 0.12);
+}
+
+#form-auth input[type="submit"] {
+    padding: 0.65rem;
+    font-size: 1.05rem;
+    background-color: var(--rouge-lacite);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+#form-auth input[type="submit"]:hover {
+    background-color: var(--rouge-lacite-fonce);
+}
+
+/* ===========================
+   RESPONSIVE AUTH
+=========================== */
+
+@media (max-width: 480px) {
+    #form-auth {
+        width: 100%;
+        padding: 1.5rem;
+    }
+}

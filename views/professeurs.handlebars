@@ -49,4 +49,67 @@
             <tbody></tbody>
         </table>
     </div>
+
+    <!-- Modale pour gérer les disponibilités -->
+    <div id="modale-disponibilites" class="modale-overlay" style="display:none;">
+        <div class="modale-contenu" style="max-width: 600px;">
+            <div class="modale-header">
+                <h3>Disponibilités - <span id="dispo-prof-nom"></span></h3>
+                <button class="modale-close" onclick="fermerModalDisponibilites()">✕</button>
+            </div>
+            
+            <div class="modale-body">
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button class="btn btn-vert" onclick="cocherTous()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">✓ Tous cocher</button>
+                    <button class="btn btn-supprimer" onclick="decocherTous()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">✕ Tous décocher</button>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                    <thead>
+                        <tr style="background-color: var(--gris-fond); border-bottom: 2px solid var(--gris-bordure);">
+                            <th style="padding: 0.75rem; text-align: left;">Jour</th>
+                            <th style="padding: 0.75rem; text-align: left;">Début</th>
+                            <th style="padding: 0.75rem; text-align: left;">Fin</th>
+                            <th style="padding: 0.75rem; text-align: center; width: 80px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableau-disponibilites"></tbody>
+                </table>
+
+                <div id="msg-dispo" class="message"></div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;">
+                    <button class="btn btn-ajouter" onclick="sauvegarderDisponibilites()">Enregistrer</button>
+                    <button class="btn btn-fermer" onclick="fermerModalDisponibilites()">Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<!-- Modale modification professeur -->
+<div id="modale-modifier" class="modale-overlay" style="display:none;">
+    <div class="modale-contenu">
+        <h3>Modifier le professeur</h3>
+        <div class="modale-champ">
+            <label>Matricule</label>
+            <input type="text" id="mod-matricule" />
+        </div>
+        <div class="modale-champ">
+            <label>Nom</label>
+            <input type="text" id="mod-nom" />
+        </div>
+        <div class="modale-champ">
+            <label>Prénom</label>
+            <input type="text" id="mod-prenom" />
+        </div>
+        <div class="modale-champ">
+            <label>Spécialité</label>
+            <input type="text" id="mod-specialite" />
+        </div>
+        <div class="modale-actions">
+            <button class="btn btn-modifier" id="mod-valider">Valider</button>
+            <button class="btn btn-supprimer" id="mod-annuler">Annuler</button>
+        </div>
+    </div>
+</div>

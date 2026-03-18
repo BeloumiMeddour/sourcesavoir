@@ -1,11 +1,14 @@
 // === GESTION DES COURS ===
 
+import { afficherMessage } from './utils.js';
+
 const formCours = document.getElementById("form-cours");
 const msgCours = document.getElementById("msg-cours");
 const tbody = document.querySelector("#table-cours tbody");
 const btnToggle = document.getElementById("btn-toggle-form");
 const formCard = document.getElementById("form-card");
 const searchInput = document.getElementById("search-cours");
+const modale = document.getElementById("modale-modifier");
 
 btnToggle.addEventListener("click", function () {
     formCard.classList.toggle("hidden");
@@ -18,12 +21,6 @@ searchInput.addEventListener("input", function () {
         tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
     });
 });
-
-function afficherMessage(element, texte, type) {
-    element.innerText = texte;
-    element.className = "message " + type;
-    setTimeout(function () { element.innerText = ""; element.className = "message"; }, 5000);
-}
 
 async function chargerCours() {
     var response = await fetch("/api/cours");
@@ -86,34 +83,26 @@ formCours.addEventListener("submit", async function (event) {
     }
 });
 
+// Fermer la modale
+function fermerModale() {
+    modale.style.display = "none";
+}
+
+document.getElementById("mod-annuler").onclick = fermerModale;
+modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+
 window.modifierCours = function (id) {
     var tr = document.querySelector('tr[data-id="' + id + '"]');
     if (!tr) return;
 
-    var ancien = document.getElementById("modale-modifier");
-    if (ancien) ancien.remove();
+    document.getElementById("mod-code").value = tr.getAttribute("data-code") || "";
+    document.getElementById("mod-nom").value = tr.getAttribute("data-nom") || "";
+    document.getElementById("mod-duree").value = tr.getAttribute("data-duree") || "";
+    document.getElementById("mod-programme").value = tr.getAttribute("data-programme") || "";
+    document.getElementById("mod-etape").value = tr.getAttribute("data-etape") || "";
+    document.getElementById("mod-typesalle").value = tr.getAttribute("data-typesalle") || "";
 
-    var modale = document.createElement("div");
-    modale.id = "modale-modifier";
-    modale.className = "modale-overlay";
-    modale.innerHTML =
-        '<div class="modale-contenu">' +
-            '<h3>Modifier le cours</h3>' +
-            '<div class="modale-champ"><label>Code</label><input type="text" id="mod-code" value="' + (tr.getAttribute("data-code") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Nom</label><input type="text" id="mod-nom" value="' + (tr.getAttribute("data-nom") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Durée (heures)</label><input type="number" id="mod-duree" value="' + (tr.getAttribute("data-duree") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Programme</label><input type="text" id="mod-programme" value="' + (tr.getAttribute("data-programme") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Étape (1-6)</label><input type="text" id="mod-etape" value="' + (tr.getAttribute("data-etape") || '') + '"></div>' +
-            '<div class="modale-champ"><label>Type de salle</label><input type="text" id="mod-typesalle" value="' + (tr.getAttribute("data-typesalle") || '') + '"></div>' +
-            '<div class="modale-actions">' +
-                '<button class="btn btn-modifier" id="mod-valider">Valider</button>' +
-                '<button class="btn btn-supprimer" id="mod-annuler">Annuler</button>' +
-            '</div>' +
-        '</div>';
-    document.body.appendChild(modale);
-
-    document.getElementById("mod-annuler").onclick = function () { modale.remove(); };
-    modale.addEventListener("click", function (e) { if (e.target === modale) modale.remove(); });
+    modale.style.display = "flex";
 
     document.getElementById("mod-valider").onclick = async function () {
         var data = {
@@ -129,7 +118,7 @@ window.modifierCours = function (id) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
-        modale.remove();
+        fermerModale();
         if (response.ok) {
             afficherMessage(msgCours, "Cours modifié avec succès !", "succes");
             chargerCours();

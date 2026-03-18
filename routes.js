@@ -134,7 +134,7 @@ router.post("/deconnexion", (request, response, next) => {
 router.get("/inscription", (request, response) => {
     response.render("auth", {
         titre: "Inscription | Planify",
-        styles: ["./css/style.css"],
+        styles: ["./css/auth.css"],
         scripts: ["/js/inscription.js"],
         type: "Inscription",
         isInscription: true,
@@ -147,7 +147,7 @@ router.get("/inscription", (request, response) => {
 router.get("/connexion", (request, response) => {
     response.render("auth", {
         titre: "Connexion | Planify",
-        styles: ["./css/style.css"],
+        styles: ["./css/auth.css"],
         scripts: ["/js/connexion.js"],
         type: "Connexion",
         isInscription: false,
@@ -164,7 +164,7 @@ router.get("/connexion", (request, response) => {
 router.get("/", (req, res) => {
     res.render("accueil", {
         titre: "Planify – Gestion des horaires",
-        styles: ["./css/style.css"],
+        styles: ["./css/accueil.css"],
         scripts: ["./js/accueil.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -201,7 +201,7 @@ router.get("/api/statistiques", async (req, res) => {
 router.get("/contact", (req, res) => {
     res.render("contact", {
         titre: "Contact | Planify",
-        styles: ["./css/style.css"],
+        styles: ["./css/contact.css"],
         scripts: ["./js/contact.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -212,7 +212,7 @@ router.get("/contact", (req, res) => {
 router.get("/cours", estAuthentifie, (req, res) => {
     res.render("cours", {
         titre: "Cours | Planify",
-        styles: ["./css/style.css"],
+        styles: [],
         scripts: ["./js/cours.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -223,7 +223,7 @@ router.get("/cours", estAuthentifie, (req, res) => {
 router.get("/professeurs", estAuthentifie, (req, res) => {
     res.render("professeurs", {
         titre: "Professeurs | Planify",
-        styles: ["./css/style.css"],
+        styles: [],
         scripts: ["./js/professeurs.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -234,7 +234,7 @@ router.get("/professeurs", estAuthentifie, (req, res) => {
 router.get("/salles", estAuthentifie, (req, res) => {
     res.render("salles", {
         titre: "Salles | Planify",
-        styles: ["./css/style.css"],
+        styles: [],
         scripts: ["./js/salles.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -245,7 +245,7 @@ router.get("/salles", estAuthentifie, (req, res) => {
 router.get("/affectations", estAuthentifie, (req, res) => {
     res.render("affectations", {
         titre: "Affectations | Planify",
-        styles: ["./css/style.css"],
+        styles: ["./css/affectations.css"],
         scripts: ["./js/affectations.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -256,7 +256,7 @@ router.get("/affectations", estAuthentifie, (req, res) => {
 router.get("/planner", estAuthentifie, (req, res) => {
     res.render("planner", {
         titre: "Emploi du Temps | Planify",
-        styles: ["./css/style.css"],
+        styles: ["./css/planner.css"],
         scripts: ["./js/planner.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -267,7 +267,7 @@ router.get("/planner", estAuthentifie, (req, res) => {
 router.get("/admin", estAdmin, (req, res) => {
     res.render("admin", {
         titre: "Administration | Planify",
-        styles: ["./css/style.css"],
+        styles: [],
         scripts: ["./js/admin.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",
@@ -278,7 +278,7 @@ router.get("/admin", estAdmin, (req, res) => {
 router.get("/gerer-semestres", estResponsableOuAdmin, (req, res) => {
     res.render("gerer-semestres", {
         titre: "Gérer les Semestres | Planify",
-        styles: ["./css/style.css"],
+        styles: [],
         scripts: ["./js/gerer-semestres.js"],
         user_email: req.session.user_email || null,
         is_admin: req.session.user_role === "admin",

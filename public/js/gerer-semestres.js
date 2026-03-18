@@ -1,5 +1,7 @@
 // === GESTION DES SEMESTRES ET JOURS FÉRIÉS ===
 
+import { afficherMessage } from './utils.js';
+
 var semestres = [];
 var joursFeeries = [];
 var semestreActif = null;
@@ -35,15 +37,6 @@ function formatDate(dateStr) {
 
 function formatDateInput(dateStr) {
     return new Date(dateStr).toISOString().split("T")[0];
-}
-
-function afficherMessage(element, texte, type) {
-    element.textContent = texte;
-    element.className = "message " + type;
-    setTimeout(() => {
-        element.textContent = "";
-        element.className = "message";
-    }, 5000);
 }
 
 // --- Gestion des Semestres ---

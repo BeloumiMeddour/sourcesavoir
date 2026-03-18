@@ -1,0 +1,20 @@
+/* ===========================
+   PAGE AFFECTATIONS - LAYOUT SPLIT
+=========================== */
+
+.affectation-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* ===========================
+   RESPONSIVE AFFECTATIONS
+=========================== */
+
+@media (max-width: 900px) {
+    .affectation-layout {
+        grid-template-columns: 1fr;
+    }
+}
