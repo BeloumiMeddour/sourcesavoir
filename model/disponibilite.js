@@ -4,6 +4,49 @@ import { PrismaClient } from "@prisma/client";
 // Créer une instance du client Prisma
 const prisma = new PrismaClient();
 
+function heureEnMinutes(heure) {
+    const [h, m] = heure.split(":").map(Number);
+    return h * 60 + m;
+}
+
+const JOUR_NOM_VERS_NUMERO = {
+    "Dimanche": 0, "Lundi": 1, "Mardi": 2, "Mercredi": 3,
+    "Jeudi": 4, "Vendredi": 5, "Samedi": 6,
+};
+
+/**
+ * Vérifie que les affectations existantes du professeur sur ce jour
+ * restent dans la nouvelle plage de disponibilité.
+ */
+async function verifierConflitAvecAffectations(id_professeur, jour, plageHoraire) {
+    const jourNum = JOUR_NOM_VERS_NUMERO[jour];
+    if (jourNum === undefined) return;
+
+    const [debutDispo, finDispo] = plageHoraire.split("-").map(heureEnMinutes);
+
+    const affectations = await prisma.affectationCours.findMany({
+        where: { id_professeur },
+        include: { cours: true },
+    });
+
+    for (const aff of affectations) {
+        let affJourNum = null;
+        if (aff.jour !== null && aff.jour !== undefined) {
+            affJourNum = parseInt(aff.jour);
+        } else if (aff.date !== null) {
+            affJourNum = new Date(aff.date).getDay();
+        }
+        if (affJourNum !== jourNum) continue;
+
+        const [debutAff, finAff] = aff.plageHoraire.split("-").map(heureEnMinutes);
+        if (debutAff < debutDispo || finAff > finDispo) {
+            throw new Error(
+                `Conflit : le professeur a un cours planifié (${aff.cours?.nom || "cours"} ${aff.plageHoraire}) qui dépasse la plage de disponibilité ${plageHoraire} le ${jour}`
+            );
+        }
+    }
+}
+
 /**
  * Ajoute une disponibilité pour un professeur
  * @param {Object} dispoData - Les données de la disponibilité
@@ -11,6 +54,10 @@ const prisma = new PrismaClient();
  */
 const addDisponibilite = async (dispoData) => {
     const { jour, plageHoraire, id_professeur } = dispoData;
+
+    if (id_professeur) {
+        await verifierConflitAvecAffectations(id_professeur, jour, plageHoraire);
+    }
 
     const newDispo = await prisma.disponibilite.create({
         data: {
