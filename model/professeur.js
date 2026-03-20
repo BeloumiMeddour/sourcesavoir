@@ -24,29 +24,11 @@ const addProfesseur = async (professeurData) => {
 };
 
 /**
- * Retourne la liste des professeurs
- * @param {Object} filters - Filtres optionnels
+ * Retourne la liste de tous les professeurs
  * @returns liste des professeurs
  */
-const getProfesseurs = async (filters = {}) => {
-    const { specialite, disponible } = filters;
-    
-    let whereClause = {};
-    
-    // Filtre par spécialité
-    if (specialite) {
-        whereClause.specialite = specialite;
-    }
-    
-    // Si on veut filtrer par disponibilité
-    const include = disponible ? {
-        disponibilites: true
-    } : undefined;
-    
-    return await prisma.professeur.findMany({
-        where: whereClause,
-        include,
-    });
+const getProfesseurs = async () => {
+    return await prisma.professeur.findMany();
 };
 
 /**
@@ -157,6 +139,55 @@ const getProfesseursByDisponibilite = async (jour) => {
     });
 };
 
+/**
+ * Définir une plage horaire de disponibilité pour un professeur
+ * @param {number} id_professeur
+ * @param {Object} dispoData - { jour, plageHoraire }
+ * @returns la disponibilité créée
+ */
+const addDisponibiliteProfesseur = async (id_professeur, dispoData) => {
+    const { jour, plageHoraire } = dispoData;
+    
+    const professeur = await prisma.professeur.findUnique({
+        where: { id: parseInt(id_professeur) },
+    });
+    
+    if (!professeur) {
+        throw new Error("Professeur non trouvé");
+    }
+    
+    const newDispo = await prisma.disponibilite.create({
+        data: {
+            jour,
+            plageHoraire,
+            typeConflit: "Professeur",
+            id_professeur: parseInt(id_professeur),
+        },
+    });
+    return newDispo;
+};
+
+/**
+ * Supprime une disponibilité d'un professeur
+ * @param {number} id - ID de la disponibilité
+ * @returns true si la disponibilité a été supprimée
+ */
+const deleteDisponibiliteProfesseur = async (id) => {
+    const dispo = await prisma.disponibilite.findUnique({
+        where: { id: id },
+    });
+    
+    if (!dispo) {
+        throw new Error("Disponibilité non trouvée");
+    }
+    
+    await prisma.disponibilite.delete({
+        where: { id: id },
+    });
+    
+    return true;
+};
+
 export { 
     addProfesseur, 
     getProfesseurs, 
@@ -164,5 +195,7 @@ export {
     updateProfesseur, 
     deleteProfesseur,
     getProfesseursBySpecialite,
-    getProfesseursByDisponibilite
+    getProfesseursByDisponibilite,
+    addDisponibiliteProfesseur,
+    deleteDisponibiliteProfesseur,
 };

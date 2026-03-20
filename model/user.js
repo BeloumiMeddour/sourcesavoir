@@ -43,4 +43,83 @@ const getUserByEmail = async (email) => {
     return user;
 };
 
-export { createUser, getUserByEmail };
+/**
+ * Récupérer tous les utilisateurs
+ * @returns liste de tous les utilisateurs
+ */
+const getUsers = async () => {
+    return await prisma.user.findMany({
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+    });
+};
+
+/**
+ * Récupérer un utilisateur par son ID
+ * @param {number} id
+ * @returns l'utilisateur correspondant ou null
+ */
+const getUserById = async (id) => {
+    return await prisma.user.findUnique({
+        where: { id: id },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+    });
+};
+
+/**
+ * Met à jour le rôle d'un utilisateur
+ * @param {number} id
+ * @param {string} role
+ * @returns l'utilisateur mis à jour
+ */
+const updateUserRole = async (id, role) => {
+    const user = await prisma.user.findUnique({
+        where: { id: id },
+    });
+    
+    if (!user) {
+        throw new Error("Utilisateur non trouvé");
+    }
+    
+    const updatedUser = await prisma.user.update({
+        where: { id: id },
+        data: { role },
+    });
+    return updatedUser;
+};
+
+/**
+ * Supprime un utilisateur
+ * @param {number} id
+ * @returns true si l'utilisateur a été supprimé
+ */
+const deleteUser = async (id) => {
+    const user = await prisma.user.findUnique({
+        where: { id: id },
+    });
+    
+    if (!user) {
+        throw new Error("Utilisateur non trouvé");
+    }
+    
+    await prisma.user.delete({
+        where: { id: id },
+    });
+    
+    return true;
+};
+
+export { createUser, getUserByEmail, getUsers, getUserById, updateUserRole, deleteUser };
