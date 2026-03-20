@@ -12,9 +12,11 @@ import bcrypt from "bcrypt";
  * @param {string} email
  * @param {string} password
  * @param {string} role
+ * @param {string} nom
+ * @param {string} prenom
  * @returns Un nouvel utilisateur créé
  */
-const createUser = async (email, password, role = "user") => {
+const createUser = async (email, password, role = "user", nom = null, prenom = null) => {
     // Hasher ou crypter le mot de passe avant de le stocker
     //10 est le nombre de salage (salt rounds) pour bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,6 +27,8 @@ const createUser = async (email, password, role = "user") => {
             email,
             password: hashedPassword,
             role,
+            nom,
+            prenom,
         },
     });
     return newUser;
@@ -43,4 +47,126 @@ const getUserByEmail = async (email) => {
     return user;
 };
 
-export { createUser, getUserByEmail };
+/**
+ * Retourne la liste de tous les utilisateurs (sans le mot de passe)
+ * @returns liste des utilisateurs
+ */
+const getUsers = async () => {
+    return await prisma.user.findMany({
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+    });
+};
+
+/**
+ * Retourne un utilisateur par son ID (sans le mot de passe)
+ * @param {number} id
+ * @returns l'utilisateur correspondant ou null
+ */
+const getUserById = async (id) => {
+    return await prisma.user.findUnique({
+        where: { id: id },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+    });
+};
+
+/**
+ * Met à jour les informations d'un utilisateur
+ * @param {number} id
+ * @param {Object} userData - { email, nom, prenom, role }
+ * @returns l'utilisateur mis à jour
+ */
+const updateUser = async (id, userData) => {
+    const user = await prisma.user.findUnique({
+        where: { id: id },
+    });
+
+    if (!user) {
+        throw new Error("Utilisateur non trouvé");
+    }
+
+    const { email, nom, prenom, role } = userData;
+
+    const updatedUser = await prisma.user.update({
+        where: { id: id },
+        data: { email, nom, prenom, role },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+    });
+
+    return updatedUser;
+};
+
+/**
+ * Attribue un rôle à un utilisateur
+ * @param {number} id
+ * @param {string} role - "admin" ou "responsable"
+ * @returns l'utilisateur mis à jour
+ */
+const assignRole = async (id, role) => {
+    const user = await prisma.user.findUnique({
+        where: { id: id },
+    });
+
+    if (!user) {
+        throw new Error("Utilisateur non trouvé");
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: { id: id },
+        data: { role: role },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+    });
+
+    return updatedUser;
+};
+
+/**
+ * Supprime un utilisateur par son ID
+ * @param {number} id
+ * @returns true si l'utilisateur a été supprimé
+ */
+const deleteUser = async (id) => {
+    const user = await prisma.user.findUnique({
+        where: { id: id },
+    });
+
+    if (!user) {
+        throw new Error("Utilisateur non trouvé");
+    }
+
+    await prisma.user.delete({
+        where: { id: id },
+    });
+
+    return true;
+};
+
+export { createUser, getUserByEmail, getUsers, getUserById, updateUser, assignRole, deleteUser };

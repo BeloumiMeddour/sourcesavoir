@@ -1,7 +1,7 @@
 {
-    "name": "todo",
+    "name": "planify",
     "version": "1.0.0",
-    "description": "Projet Todo",
+    "description": "Projet Planify",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",

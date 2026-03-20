@@ -133,36 +133,11 @@ const getProfesseursBySpecialite = async (specialite) => {
     });
 };
 
-/**
- * Filtre les professeurs par disponibilité pour un jour donné
- * @param {string} jour - "Lundi", "Mardi", etc.
- * @returns liste des professeurs disponibles ce jour
- */
-const getProfesseursByDisponibilite = async (jour) => {
-    return await prisma.professeur.findMany({
-        where: {
-            disponibilites: {
-                some: {
-                    jour: jour,
-                },
-            },
-        },
-        include: {
-            disponibilites: {
-                where: {
-                    jour: jour,
-                },
-            },
-        },
-    });
-};
-
-export { 
-    addProfesseur, 
-    getProfesseurs, 
-    getProfesseurById, 
-    updateProfesseur, 
+export {
+    addProfesseur,
+    getProfesseurs,
+    getProfesseurById,
+    updateProfesseur,
     deleteProfesseur,
     getProfesseursBySpecialite,
-    getProfesseursByDisponibilite
 };
