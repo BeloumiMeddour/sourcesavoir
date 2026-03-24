@@ -8,13 +8,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  role      String   // Administrateur ou ResponsableAntratiff
-  nom       String
-  prenom    String
+  role      String   @default("user")
+  nom       String?  
+  prenom    String?  
   createdAt DateTime @default(now())
 }
 
@@ -48,6 +49,7 @@ model Professeur {
   nom             String
   prenom          String
   specialite      String
+  chargeMax       Int                @default(30) // Charge horaire maximale par semaine
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   disponibilites  Disponibilite[]
@@ -70,22 +72,54 @@ model Disponibilite {
   createdAt       DateTime    @default(now())
 }
 
+// Semestres (périodes d'études ex: Hiver 2026, Été 2026)
+model Semestre {
+  id              Int                @id @default(autoincrement())
+  nom             String             @unique // ex: "Hiver 2026"
+  dateDebut       DateTime
+  dateFin         DateTime
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  affectations    AffectationCours[]
+  joursFeeries    JourFerie[]
+}
+
+// Jours fériés et jours sans cours
+model JourFerie {
+  id              Int        @id @default(autoincrement())
+  date            DateTime
+  description     String     // ex: "Noël", "Congé de printemps"
+  
+  // Relations
+  id_semestre     Int
+  semestre        Semestre   @relation(fields: [id_semestre], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime   @default(now())
+  
+  @@unique([id_semestre, date])
+}
+
 // Cours planifiés (affectations)
 model AffectationCours {
   id              Int        @id @default(autoincrement())
-  date            DateTime
+  session         String?    // ex: "Hiver 2026" - Optionnel (pour compatibilité)
+  jour            String?    // ex: "Lundi" - Optionnel (pour compatibilité)
   plageHoraire    String     // ex: "08:00-10:00"
-  
+  date            DateTime?  // Date précise du cours
+
   // Relations
   id_cours        Int
   cours           Cours      @relation(fields: [id_cours], references: [id])
-  
-  id_professeur   Int
-  professeur      Professeur @relation(fields: [id_professeur], references: [id])
-  
+
+  id_professeur   Int?
+  professeur      Professeur? @relation(fields: [id_professeur], references: [id])
+
   id_salle        Int
   salle           Salle      @relation(fields: [id_salle], references: [id])
-  
+
+  id_semestre     Int?
+  semestre        Semestre?  @relation(fields: [id_semestre], references: [id])
+
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

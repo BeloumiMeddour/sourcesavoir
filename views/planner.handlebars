@@ -1,0 +1,44 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1>Emploi du Temps</h1>
+        <div class="right-actions">
+            <span>Semestre</span>
+            <select id="select-semestre">
+                <option value="">-- Sélectionner un semestre --</option>
+            </select>
+            <span>Salle</span>
+            <select id="filtre-salle">
+                <option value="">Toutes</option>
+            </select>
+            <span>Professeur</span>
+            <select id="filtre-prof">
+                <option value="">Tous</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Navigation simple : Précédent / Aujourd'hui / Suivant -->
+    <div class="planning-controls">
+        <div>
+            <button class="btn btn-nav" id="btn-prec">&lt; Précédent</button>
+            <button class="btn btn-bleu" id="btn-aujourdhui">Aujourd'hui</button>
+            <button class="btn btn-nav" id="btn-suiv">Suivant &gt;</button>
+        </div>
+        <span class="semaine-label" id="label-semaine"></span>
+        <button class="btn btn-bleu" id="btn-exporter">Imprimer</button>
+    </div>
+
+    <!-- Grille de la semaine -->
+    <div class="planning-card">
+        <div class="planning-grid" id="planning-grid">
+            <!-- Rempli par JS -->
+        </div>
+
+        <div class="planning-legende">
+            <div class="legende-item">
+                <div class="legende-dot vert"></div>
+                Cours planifié
+            </div>
+        </div>
+    </div>
+</section>

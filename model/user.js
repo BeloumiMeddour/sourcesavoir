@@ -12,9 +12,11 @@ import bcrypt from "bcrypt";
  * @param {string} email
  * @param {string} password
  * @param {string} role
+ * @param {string} nom
+ * @param {string} prenom
  * @returns Un nouvel utilisateur créé
  */
-const createUser = async (email, password, role = "user") => {
+const createUser = async (email, password, role = "user", nom = null, prenom = null) => {
     // Hasher ou crypter le mot de passe avant de le stocker
     //10 est le nombre de salage (salt rounds) pour bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,6 +27,8 @@ const createUser = async (email, password, role = "user") => {
             email,
             password: hashedPassword,
             role,
+            nom,
+            prenom,
         },
     });
     return newUser;
