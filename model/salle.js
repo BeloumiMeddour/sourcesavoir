@@ -1,7 +1,7 @@
-// Importer le client Prisma
+// importer le client prisma
 import { PrismaClient } from "@prisma/client";
 
-// Créer une instance du client Prisma
+// Créer une instance du client prisma
 const prisma = new PrismaClient();
 
 /**
@@ -11,25 +11,23 @@ const prisma = new PrismaClient();
  */
 const addSalle = async (salleData) => {
     const { code, type, capacite } = salleData;
-
+    
     const newSalle = await prisma.salle.create({
         data: {
             code,
             type,
-            capacite,
+            capacite: parseInt(capacite),
         },
     });
     return newSalle;
 };
 
 /**
- * Retourne la liste des salles
+ * Retourne la liste de toutes les salles
  * @returns liste des salles
  */
 const getSalles = async () => {
-    return await prisma.salle.findMany({
-        orderBy: { code: "asc" },
-    });
+    return await prisma.salle.findMany();
 };
 
 /**
@@ -44,17 +42,6 @@ const getSalleById = async (id) => {
 };
 
 /**
- * Retourne les salles par type
- * @param {string} type
- * @returns liste des salles de ce type
- */
-const getSallesByType = async (type) => {
-    return await prisma.salle.findMany({
-        where: { type: type },
-    });
-};
-
-/**
  * Met à jour une salle
  * @param {number} id
  * @param {Object} salleData - Les nouvelles données
@@ -64,16 +51,16 @@ const updateSalle = async (id, salleData) => {
     const salle = await prisma.salle.findUnique({
         where: { id: id },
     });
-
+    
     if (!salle) {
         throw new Error("Salle non trouvée");
     }
-
+    
     const updatedSalle = await prisma.salle.update({
         where: { id: id },
         data: salleData,
     });
-
+    
     return updatedSalle;
 };
 
@@ -85,29 +72,61 @@ const updateSalle = async (id, salleData) => {
 const deleteSalle = async (id) => {
     const salle = await prisma.salle.findUnique({
         where: { id: id },
-        include: { affectations: true },
+        include: {
+            affectations: {
+                where: {
+                    date: {
+                        gte: new Date(),
+                    },
+                },
+            },
+        },
     });
-
+    
     if (!salle) {
         throw new Error("Salle non trouvée");
     }
-
-    if (salle.affectations.length > 0) {
-        throw new Error("Impossible de supprimer cette salle car elle a des cours planifiés");
+    
+    // Vérifier si la salle a des affectations futures
+    if (salle.affectations && salle.affectations.length > 0) {
+        throw new Error("Impossible de supprimer cette salle car elle a des cours planifiés futurs");
     }
-
+    
     await prisma.salle.delete({
         where: { id: id },
     });
-
+    
     return true;
+};
+
+/**
+ * Filtre les salles par type
+ * @param {string} type
+ * @returns liste des salles de ce type
+ */
+const getSallesByType = async (type) => {
+    return await prisma.salle.findMany({
+        where: { type },
+    });
+};
+
+/**
+ * Filtre les salles par code
+ * @param {string} code
+ * @returns liste des salles avec ce code
+ */
+const getSallesByCode = async (code) => {
+    return await prisma.salle.findMany({
+        where: { code },
+    });
 };
 
 export {
     addSalle,
     getSalles,
     getSalleById,
-    getSallesByType,
     updateSalle,
     deleteSalle,
+    getSallesByType,
+    getSallesByCode,
 };

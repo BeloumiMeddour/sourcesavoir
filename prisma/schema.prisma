@@ -26,7 +26,7 @@ model Cours {
   nom             String
   duree           Int
   programme       String
-  etapeEtude      String
+  etapeEtude      String             @default("")
   typeSalle       String
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
