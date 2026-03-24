@@ -1030,4 +1030,114 @@ router.delete("/api/jours-feries/:id", estResponsableOuAdmin, async (req, res) =
     }
 });
 
+router.get("/api/dashboard", async (req, res) => {
+    try {
+        const cours = await getCours();
+        const salles = await getSalles();
+        const professeurs = await getProfesseurs();
+        const affectations = await getAffectations();
+
+        const nbCours = cours.length;
+        const nbAffectations = affectations.length;
+
+        const profsAvecAffectation = affectations.filter(a => a.id_professeur).length;
+        const tauxOccupationProfesseurs = nbAffectations > 0
+            ? Math.round((profsAvecAffectation / nbAffectations) * 100)
+            : 0;
+
+        const sallesUtilisees = new Set(
+            affectations
+                .filter(a => a.id_salle)
+                .map(a => a.id_salle)
+        ).size;
+
+        const tauxUtilisationSalles = salles.length > 0
+            ? Math.round((sallesUtilisees / salles.length) * 100)
+            : 0;
+
+        const joursMap = {
+            "0": "Dim",
+            "1": "Lun",
+            "2": "Mar",
+            "3": "Mer",
+            "4": "Jeu",
+            "5": "Ven",
+            "6": "Sam",
+        };
+
+        const affectationsParJour = {
+            Lun: 0,
+            Mar: 0,
+            Mer: 0,
+            Jeu: 0,
+            Ven: 0,
+            Sam: 0,
+            Dim: 0,
+        };
+
+        affectations.forEach((a) => {
+            let jourLabel = null;
+
+            if (a.date) {
+                const d = new Date(a.date);
+                jourLabel = joursMap[d.getDay().toString()];
+            }
+
+            if (jourLabel && affectationsParJour[jourLabel] !== undefined) {
+                affectationsParJour[jourLabel]++;
+            }
+        });
+
+        const programmeCounts = {};
+        cours.forEach((c) => {
+            const programme = c.programme || "Non défini";
+            programmeCounts[programme] = (programmeCounts[programme] || 0) + 1;
+        });
+
+        const repartitionProgrammes = Object.entries(programmeCounts)
+            .map(([label, value]) => ({ label, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 5);
+
+        const profsMap = {};
+
+        affectations.forEach((a) => {
+            if (!a.professeur) return;
+
+            const id = a.professeur.id;
+            const nomComplet = `${a.professeur.prenom || ""} ${a.professeur.nom || ""}`.trim();
+
+            if (!profsMap[id]) {
+                profsMap[id] = {
+                    id,
+                    nom: nomComplet || "Professeur",
+                    initials: `${a.professeur.prenom?.[0] || ""}${a.professeur.nom?.[0] || ""}`.toUpperCase(),
+                    count: 0,
+                };
+            }
+
+            profsMap[id].count++;
+        });
+
+        const topProfesseurs = Object.values(profsMap)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+
+        res.json({
+            stats: {
+                nbCours,
+                nbAffectations,
+                tauxOccupationProfesseurs,
+                tauxUtilisationSalles,
+            },
+            affectationsParJour,
+            repartitionProgrammes,
+            topProfesseurs,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erreur lors du chargement du dashboard" });
+    }
+});
+
 export default router;
