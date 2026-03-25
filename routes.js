@@ -1,27 +1,14 @@
 import { Router } from "express";
-import { createUser, getUsers, getUserById, updateUserRole, deleteUser } from "./model/user.js";
-
-import { 
-    addCours, 
-    getCours, 
-    getCoursById, 
-    updateCours, 
+import { createUser, getUsers, getUserById, updateUser, assignRole, deleteUser } from "./model/user.js";
+import {
+    addCours,
+    getCours,
+    getCoursById,
+    updateCours,
     deleteCours,
     getCoursByProgramme,
-    getCoursByDuree,
     getCoursByTypeSalle,
-    getCoursByEtapeEtude,
 } from "./model/cours.js";
-
-import { 
-    addSalle, 
-    getSalles, 
-    getSalleById, 
-    updateSalle, 
-    deleteSalle,
-    getSallesByType,
-    getSallesByCode,
-} from "./model/salle.js";
 
 import { 
     addProfesseur, 
@@ -29,22 +16,54 @@ import {
     getProfesseurById, 
     updateProfesseur, 
     deleteProfesseur,
-    getProfesseursBySpecialite,
-    getProfesseursByDisponibilite,
-    addDisponibiliteProfesseur,
-    deleteDisponibiliteProfesseur,
+    getProfesseursBySpecialite 
 } from "./model/professeur.js";
 
-import { 
-    addAffectation, 
-    getAffectations, 
-    getAffectationById, 
-    deleteAffectation,
-    getConflitSalle,
-    getConflitProfesseur,
+import {
+    addSalle,
+    getSalles,
+    getSalleById,
+    getSallesByType,
+    updateSalle,
+    deleteSalle,
+} from "./model/salle.js";
+
+import {
+    addDisponibilite,
+    getDisponibilitesByProfesseur,
+    updateDisponibilite,
+    deleteDisponibilite,
+} from "./model/disponibilite.js";
+
+import {
+    affecterCoursASalle,
+    assignerProfesseur,
+    affecterCoursAuSemestre,
+    getAffectations,
+    getAffectationById,
     getAffectationsBySalle,
     getAffectationsByProfesseur,
+    updateAffectation,
+    deleteAffectation,
+    calculerChargeHoraireProfesseur,
+    getProfesseursAvecDisponibilitePourSlot,
 } from "./model/affectation.js";
+
+import {
+    addSemestre,
+    getSemestres,
+    getSemestreById,
+    updateSemestre,
+    deleteSemestre,
+} from "./model/semestre.js";
+
+import {
+    addJourFerie,
+    getJoursFeeries,
+    getJourFerieById,
+    updateJourFerie,
+    deleteJourFerie,
+} from "./model/jourferie.js";
 
 const router = Router();
 
@@ -53,21 +72,6 @@ import passport from "passport";
 
 // Importation des middlewares d'authentification
 import { estAuthentifie, estAdmin, estResponsableOuAdmin } from "./middleware/auth.js";
-
-/* ===========================
-   MIDDLEWARE PROTECTION API
-=========================== */
-
-// Vérifie que l'utilisateur est connecté et admin pour les routes API
-const protegerRouteAPI = (req, res, next) => {
-    if (!req.session.user_email) {
-        return res.status(401).json({ error: "Non authentifié" });
-    }
-    if (req.session.user_role !== "admin") {
-        return res.status(403).json({ error: "Accès refusé" });
-    }
-    next();
-};
 
 /* ===========================
    AUTHENTIFICATION
@@ -381,252 +385,84 @@ router.delete("/api/utilisateurs/:id", estAdmin, async (req, res) => {
    API - COURS
 =========================== */
 
-// Protéger toutes les routes API
-router.use("/api", protegerRouteAPI);
-
-// Route pour ajouter un cours
-router.post("/api/add-cours", async (req, res) => {
-    const { code, nom, duree, programme, etapeEtude, typeSalle } = req.body;
+// Ajouter un cours
+router.post("/api/cours", estResponsableOuAdmin, async (req, res) => {
     try {
-        const cours = await addCours({
-            code,
-            nom,
-            duree,
-            programme,
-            etapeEtude,
-            typeSalle,
-        });
-        res.status(201).json({
-            msg: "Cours ajouté avec succès",
-            cours,
-        });
+        const cours = await addCours(req.body);
+        res.status(201).json({ msg: "Cours ajouté avec succès", cours });
     } catch (error) {
         if (error.code === "P2002") {
-            res.status(409).json({
-                error: "Un cours avec ce code existe déjà",
-            });
+            res.status(409).json({ error: "Un cours avec ce code existe déjà" });
         } else {
-            res.status(500).json({
-                error: "Erreur lors de l'ajout du cours: " + error.message,
-            });
+            res.status(500).json({ error: "Erreur lors de l'ajout du cours: " + error.message });
         }
     }
 });
 
-// Route pour obtenir la liste des cours
-router.get("/api/cours", async (req, res) => {
+// Lister les cours (avec filtre optionnel par programme ou typeSalle)
+router.get("/api/cours", estAuthentifie, async (req, res) => {
     try {
-        const { programme, duree, typeSalle, etapeEtude } = req.query;
+        const { programme, typeSalle } = req.query;
         let cours;
-        
+
         if (programme) {
             cours = await getCoursByProgramme(programme);
-        } else if (duree) {
-            cours = await getCoursByDuree(duree);
         } else if (typeSalle) {
             cours = await getCoursByTypeSalle(typeSalle);
-        } else if (etapeEtude) {
-            cours = await getCoursByEtapeEtude(etapeEtude);
         } else {
             cours = await getCours();
         }
-        
+
         res.status(200).json(cours);
     } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération des cours: " + error.message,
-        });
+        res.status(500).json({ error: "Erreur lors de la récupération des cours: " + error.message });
     }
 });
 
-// Route pour obtenir un cours par son ID
-router.get("/api/cours/:id", async (req, res) => {
+// Obtenir un cours par ID
+router.get("/api/cours/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const cours = await getCoursById(id);
         if (!cours) {
-            return res.status(404).json({
-                error: "Cours non trouvé",
-            });
+            return res.status(404).json({ error: "Cours non trouvé" });
         }
         res.status(200).json(cours);
     } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération du cours: " + error.message,
-        });
+        res.status(500).json({ error: "Erreur lors de la récupération du cours: " + error.message });
     }
 });
 
-// Route pour mettre à jour un cours
-router.put("/api/update-cours/:id", async (req, res) => {
+// Modifier un cours
+router.put("/api/cours/:id", estResponsableOuAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const cours = await updateCours(id, req.body);
-        res.status(200).json({
-            msg: "Cours mis à jour avec succès",
-            cours,
-        });
+        res.status(200).json({ msg: "Cours mis à jour avec succès", cours });
     } catch (error) {
         if (error.message === "Cours non trouvé") {
             res.status(404).json({ error: error.message });
         } else {
-            res.status(500).json({
-                error: "Erreur lors de la mise à jour du cours: " + error.message,
-            });
+            res.status(500).json({ error: "Erreur lors de la mise à jour du cours: " + error.message });
         }
     }
 });
 
-// Route pour supprimer un cours
-router.delete("/api/delete-cours/:id", async (req, res) => {
+// Supprimer un cours
+router.delete("/api/cours/:id", estResponsableOuAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteCours(id);
-        res.status(200).json({
-            msg: "Cours supprimé avec succès",
-        });
+        res.status(200).json({ msg: "Cours supprimé avec succès" });
     } catch (error) {
         if (error.message === "Cours non trouvé") {
             res.status(404).json({ error: error.message });
-        } else if (error.message.includes("affectations futures")) {
+        } else if (error.message.includes("affectations")) {
             res.status(400).json({ error: error.message });
         } else {
-            res.status(500).json({
-                error: "Erreur lors de la suppression du cours: " + error.message,
-            });
+            res.status(500).json({ error: "Erreur lors de la suppression du cours: " + error.message });
         }
     }
-});
-
-// ==================== ROUTES SALLES ====================
-
-// Route pour ajouter une salle
-router.post("/api/add-salle", async (req, res) => {
-    const { code, type, capacite } = req.body;
-    try {
-        const salle = await addSalle({
-            code,
-            type,
-            capacite,
-        });
-        res.status(201).json({
-            msg: "Salle ajoutée avec succès",
-            salle,
-        });
-    } catch (error) {
-        if (error.code === "P2002") {
-            res.status(409).json({
-                error: "Une salle avec ce code existe déjà",
-            });
-        } else {
-            res.status(500).json({
-                error: "Erreur lors de l'ajout de la salle: " + error.message,
-            });
-        }
-    }
-});
-
-// Route pour obtenir la liste des salles
-router.get("/api/salles", async (req, res) => {
-    try {
-        const { type, code } = req.query;
-        let salles;
-        
-        if (type) {
-            salles = await getSallesByType(type);
-        } else if (code) {
-            salles = await getSallesByCode(code);
-        } else {
-            salles = await getSalles();
-        }
-        
-        res.status(200).json(salles);
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération des salles: " + error.message,
-        });
-    }
-});
-
-// Route pour obtenir une salle par son ID
-router.get("/api/salles/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    try {
-        const salle = await getSalleById(id);
-        if (!salle) {
-            return res.status(404).json({
-                error: "Salle non trouvée",
-            });
-        }
-        res.status(200).json(salle);
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération de la salle: " + error.message,
-        });
-    }
-});
-
-// Route pour mettre à jour une salle
-router.put("/api/update-salle/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    try {
-        const salle = await updateSalle(id, req.body);
-        res.status(200).json({
-            msg: "Salle mise à jour avec succès",
-            salle,
-        });
-    } catch (error) {
-        if (error.message === "Salle non trouvée") {
-            res.status(404).json({ error: error.message });
-        } else {
-            res.status(500).json({
-                error: "Erreur lors de la mise à jour de la salle: " + error.message,
-            });
-        }
-    }
-});
-
-// Route pour supprimer une salle
-router.delete("/api/delete-salle/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    try {
-        await deleteSalle(id);
-        res.status(200).json({
-            msg: "Salle supprimée avec succès",
-        });
-    } catch (error) {
-        if (error.message === "Salle non trouvée") {
-            res.status(404).json({ error: error.message });
-        } else if (error.message.includes("cours planifiés")) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(500).json({
-                error: "Erreur lors de la suppression de la salle: " + error.message,
-            });
-        }
-    }
-});
-
-// ==================== ROUTES PROFESSEURS ====================
-
-// Route pour la page de gestion des professeurs
-router.get("/professeurs", async (req, res) => {
-    // Protection de la route
-    if (!req.session.user_email) {
-        return res.redirect("/connexion");
-    }
-    if (req.session.user_role !== "admin") {
-        return res.status(403).send("Accès refusé");
-    }
-    
-    res.render("professeurs", {
-        titre: "Gestion des Professeurs",
-        styles: ["./css/style.css", "./css/professeurs.css"],
-        scripts: ["./js/professeurs.js"],
-        professeurs: await getProfesseurs(),
-        user_email: req.session.user_email || null,
-        is_admin: req.session.user_role === "admin",
-    });
 });
 
 /* ===========================
@@ -650,13 +486,11 @@ router.post("/api/professeurs", estResponsableOuAdmin, async (req, res) => {
 // Lister les professeurs (avec filtre optionnel par spécialité)
 router.get("/api/professeurs", estAuthentifie, async (req, res) => {
     try {
-        const { specialite, disponibilite } = req.query;
+        const { specialite } = req.query;
         let professeurs;
 
         if (specialite) {
             professeurs = await getProfesseursBySpecialite(specialite);
-        } else if (disponibilite) {
-            professeurs = await getProfesseursByDisponibilite(disponibilite);
         } else {
             professeurs = await getProfesseurs();
         }
@@ -994,287 +828,204 @@ router.get("/api/affectations/:id", estAuthentifie, async (req, res) => {
     }
 });
 
-// ==================== ROUTES DISPONIBILITÉS PROFESSEURS ====================
-
-// Route pour ajouter une disponibilité à un professeur
-router.post("/api/professeurs/:id/disponibilites", async (req, res) => {
-    const id_professeur = parseInt(req.params.id);
-    const { jour, plageHoraire } = req.body;
-    try {
-        const disponibilite = await addDisponibiliteProfesseur(id_professeur, {
-            jour,
-            plageHoraire,
-        });
-        res.status(201).json({
-            msg: "Disponibilité ajoutée avec succès",
-            disponibilite,
-        });
-    } catch (error) {
-        if (error.message === "Professeur non trouvé") {
-            res.status(404).json({ error: error.message });
-        } else {
-            res.status(500).json({
-                error: "Erreur lors de l'ajout de la disponibilité: " + error.message,
-            });
-        }
-    }
-});
-
-// Route pour supprimer une disponibilité d'un professeur
-router.delete("/api/disponibilites/:id", async (req, res) => {
+// Obtenir les affectations d'une salle
+router.get("/api/affectations/salle/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
-        await deleteDisponibiliteProfesseur(id);
-        res.status(200).json({
-            msg: "Disponibilité supprimée avec succès",
-        });
-    } catch (error) {
-        if (error.message === "Disponibilité non trouvée") {
-            res.status(404).json({ error: error.message });
-        } else {
-            res.status(500).json({
-                error: "Erreur lors de la suppression de la disponibilité: " + error.message,
-            });
-        }
-    }
-});
-
-// ==================== ROUTES AFFECTATIONS ====================
-
-// Route pour créer une affectation (cours → salle + professeur + date)
-router.post("/api/add-affectation", async (req, res) => {
-    const { id_cours, id_professeur, id_salle, date, plageHoraire } = req.body;
-    try {
-        // Récupérer le cours, la salle et le professeur
-        const cours = await getCoursById(parseInt(id_cours));
-        if (!cours) {
-            return res.status(404).json({ error: "Cours non trouvé" });
-        }
-        
-        const salle = await getSalleById(parseInt(id_salle));
-        if (!salle) {
-            return res.status(404).json({ error: "Salle non trouvée" });
-        }
-        
-        const professeur = await getProfesseurById(parseInt(id_professeur));
-        if (!professeur) {
-            return res.status(404).json({ error: "Professeur non trouvé" });
-        }
-        
-        // Vérifier compatibilité type de salle
-        if (cours.typeSalle !== salle.type) {
-            return res.status(400).json({
-                error: "Le type de salle ne correspond pas au cours. Le cours nécessite une salle de type: " + cours.typeSalle,
-            });
-        }
-        
-        // Vérifier que la spécialité du professeur correspond au programme du cours
-        if (professeur.specialite !== cours.programme) {
-            return res.status(400).json({
-                error: "La spécialité du professeur ne correspond pas au programme du cours",
-            });
-        }
-        
-        // Vérifier la disponibilité du professeur pour ce jour
-        const dateObj = new Date(date);
-        const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-        const jourSemaine = jours[dateObj.getDay()];
-        
-        let profDisponible = false;
-        if (professeur.disponibilites && professeur.disponibilites.length > 0) {
-            for (let i = 0; i < professeur.disponibilites.length; i++) {
-                if (professeur.disponibilites[i].jour === jourSemaine && professeur.disponibilites[i].plageHoraire === plageHoraire) {
-                    profDisponible = true;
-                    break;
-                }
-            }
-        }
-        
-        if (!profDisponible) {
-            return res.status(400).json({
-                error: "Le professeur n'est pas disponible ce jour (" + jourSemaine + ") à cette plage horaire",
-            });
-        }
-        
-        // Vérifier conflit de salle
-        const conflitSalle = await getConflitSalle(id_salle, date, plageHoraire);
-        if (conflitSalle) {
-            return res.status(409).json({
-                error: "La salle est déjà occupée à cette plage horaire",
-                conflit: conflitSalle,
-            });
-        }
-        
-        // Vérifier conflit de professeur
-        const conflitProf = await getConflitProfesseur(id_professeur, date, plageHoraire);
-        if (conflitProf) {
-            return res.status(409).json({
-                error: "Le professeur est déjà assigné à cette plage horaire",
-                conflit: conflitProf,
-            });
-        }
-        
-        const affectation = await addAffectation({
-            id_cours,
-            id_professeur,
-            id_salle,
-            date,
-            plageHoraire,
-        });
-        res.status(201).json({
-            msg: "Affectation créée avec succès",
-            affectation,
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la création de l'affectation: " + error.message,
-        });
-    }
-});
-
-// Route pour obtenir la liste des affectations
-router.get("/api/affectations", async (req, res) => {
-    try {
-        const affectations = await getAffectations();
+        const affectations = await getAffectationsBySalle(id);
         res.status(200).json(affectations);
     } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération des affectations: " + error.message,
-        });
+        res.status(500).json({ error: "Erreur lors de la récupération: " + error.message });
     }
 });
 
-// Route pour obtenir une affectation par son ID
-router.get("/api/affectations/:id", async (req, res) => {
+// Obtenir les affectations d'un professeur
+router.get("/api/affectations/professeur/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
-        const affectation = await getAffectationById(id);
-        if (!affectation) {
-            return res.status(404).json({
-                error: "Affectation non trouvée",
-            });
+        const affectations = await getAffectationsByProfesseur(id);
+        res.status(200).json(affectations);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération: " + error.message });
+    }
+});
+
+// Modifier une affectation
+router.put("/api/affectations/:id", estResponsableOuAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const affectation = await updateAffectation(id, req.body);
+        res.status(200).json({ msg: "Affectation mise à jour avec succès", affectation });
+    } catch (error) {
+        if (error.message.includes("Conflit")) {
+            res.status(409).json({ error: error.message });
+        } else if (error.message === "Affectation non trouvée") {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: "Erreur lors de la mise à jour: " + error.message });
         }
-        res.status(200).json(affectation);
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération de l'affectation: " + error.message,
-        });
     }
 });
 
-// Route pour obtenir les affectations d'une salle pour une date
-router.get("/api/affectations/salle/:id_salle/:date", async (req, res) => {
-    const id_salle = parseInt(req.params.id_salle);
-    const date = req.params.date;
-    try {
-        const affectations = await getAffectationsBySalle(id_salle, date);
-        res.status(200).json(affectations);
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération des affectations: " + error.message,
-        });
-    }
-});
-
-// Route pour obtenir les affectations d'un professeur pour une date
-router.get("/api/affectations/professeur/:id_professeur/:date", async (req, res) => {
-    const id_professeur = parseInt(req.params.id_professeur);
-    const date = req.params.date;
-    try {
-        const affectations = await getAffectationsByProfesseur(id_professeur, date);
-        res.status(200).json(affectations);
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération des affectations: " + error.message,
-        });
-    }
-});
-
-// Route pour supprimer une affectation
-router.delete("/api/delete-affectation/:id", async (req, res) => {
+// Supprimer une affectation
+router.delete("/api/affectations/:id", estResponsableOuAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteAffectation(id);
-        res.status(200).json({
-            msg: "Affectation supprimée avec succès",
-        });
+        res.status(200).json({ msg: "Affectation supprimée avec succès" });
     } catch (error) {
         if (error.message === "Affectation non trouvée") {
             res.status(404).json({ error: error.message });
         } else {
-            res.status(500).json({
-                error: "Erreur lors de la suppression de l'affectation: " + error.message,
-            });
+            res.status(500).json({ error: "Erreur lors de la suppression: " + error.message });
         }
     }
 });
 
-// ==================== ROUTES GESTION UTILISATEURS (ADMIN) ====================
+/* ===========================
+   API - SEMESTRES
+=========================== */
 
-// Route pour obtenir la liste des utilisateurs
-router.get("/api/users", async (req, res) => {
+// Créer un semestre
+router.post("/api/semestres", estResponsableOuAdmin, async (req, res) => {
     try {
-        const users = await getUsers();
-        res.status(200).json(users);
+        const { nom, dateDebut, dateFin } = req.body;
+        const semestre = await addSemestre(nom, dateDebut, dateFin);
+        res.status(201).json({ msg: "Semestre créé avec succès", semestre });
     } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération des utilisateurs: " + error.message,
-        });
-    }
-});
-
-// Route pour obtenir un utilisateur par son ID
-router.get("/api/users/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    try {
-        const user = await getUserById(id);
-        if (!user) {
-            return res.status(404).json({ error: "Utilisateur non trouvé" });
+        if (error.code === "P2002") {
+            res.status(409).json({ error: "Un semestre avec ce nom existe déjà" });
+        } else {
+            res.status(500).json({ error: "Erreur lors de la création: " + error.message });
         }
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({
-            error: "Erreur lors de la récupération de l'utilisateur: " + error.message,
-        });
     }
 });
 
-// Route pour mettre à jour le rôle d'un utilisateur
-router.put("/api/update-user/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    const { role } = req.body;
+// Lister tous les semestres
+router.get("/api/semestres", estAuthentifie, async (req, res) => {
     try {
-        const user = await updateUserRole(id, role);
-        res.status(200).json({
-            msg: "Rôle mis à jour avec succès",
-            user,
-        });
+        const semestres = await getSemestres();
+        res.status(200).json(semestres);
     } catch (error) {
-        if (error.message === "Utilisateur non trouvé") {
+        res.status(500).json({ error: "Erreur lors de la récupération: " + error.message });
+    }
+});
+
+// Obtenir un semestre par ID
+router.get("/api/semestres/:id", estAuthentifie, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const semestre = await getSemestreById(id);
+        if (!semestre) {
+            return res.status(404).json({ error: "Semestre non trouvé" });
+        }
+        res.status(200).json(semestre);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération: " + error.message });
+    }
+});
+
+// Modifier un semestre
+router.put("/api/semestres/:id", estResponsableOuAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const semestre = await updateSemestre(id, req.body);
+        res.status(200).json({ msg: "Semestre mis à jour avec succès", semestre });
+    } catch (error) {
+        if (error.message === "Semestre non trouvé") {
             res.status(404).json({ error: error.message });
         } else {
-            res.status(500).json({
-                error: "Erreur lors de la mise à jour de l'utilisateur: " + error.message,
-            });
+            res.status(500).json({ error: "Erreur lors de la mise à jour: " + error.message });
         }
     }
 });
 
-// Route pour supprimer un utilisateur
-router.delete("/api/delete-user/:id", async (req, res) => {
+// Supprimer un semestre
+router.delete("/api/semestres/:id", estResponsableOuAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
-        await deleteUser(id);
-        res.status(200).json({
-            msg: "Utilisateur supprimé avec succès",
-        });
+        await deleteSemestre(id);
+        res.status(200).json({ msg: "Semestre supprimé avec succès" });
     } catch (error) {
-        if (error.message === "Utilisateur non trouvé") {
+        if (error.message === "Semestre non trouvé") {
             res.status(404).json({ error: error.message });
         } else {
-            res.status(500).json({
-                error: "Erreur lors de la suppression de l'utilisateur: " + error.message,
-            });
+            res.status(500).json({ error: "Erreur lors de la suppression: " + error.message });
+        }
+    }
+});
+
+/* ===========================
+   API - JOURS FÉRIÉS
+=========================== */
+
+// Ajouter un jour férié à un semestre
+router.post("/api/semestres/:id_semestre/jours-feries", estResponsableOuAdmin, async (req, res) => {
+    const id_semestre = parseInt(req.params.id_semestre);
+    const { date, description } = req.body;
+    try {
+        const jourFerie = await addJourFerie(id_semestre, date, description);
+        res.status(201).json({ msg: "Jour férié ajouté avec succès", jourFerie });
+    } catch (error) {
+        if (error.code === "P2002") {
+            res.status(409).json({ error: "Un jour férié existe déjà à cette date pour ce semestre" });
+        } else {
+            res.status(500).json({ error: "Erreur lors de l'ajout: " + error.message });
+        }
+    }
+});
+
+// Lister les jours fériés d'un semestre
+router.get("/api/semestres/:id_semestre/jours-feries", estAuthentifie, async (req, res) => {
+    const id_semestre = parseInt(req.params.id_semestre);
+    try {
+        const joursFeeries = await getJoursFeeries(id_semestre);
+        res.status(200).json(joursFeeries);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération: " + error.message });
+    }
+});
+
+// Obtenir un jour férié par ID
+router.get("/api/jours-feries/:id", estAuthentifie, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const jourFerie = await getJourFerieById(id);
+        if (!jourFerie) {
+            return res.status(404).json({ error: "Jour férié non trouvé" });
+        }
+        res.status(200).json(jourFerie);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors de la récupération: " + error.message });
+    }
+});
+
+// Modifier un jour férié
+router.put("/api/jours-feries/:id", estResponsableOuAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const jourFerie = await updateJourFerie(id, req.body);
+        res.status(200).json({ msg: "Jour férié mis à jour avec succès", jourFerie });
+    } catch (error) {
+        if (error.message === "Jour férié non trouvé") {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: "Erreur lors de la mise à jour: " + error.message });
+        }
+    }
+});
+
+// Supprimer un jour férié
+router.delete("/api/jours-feries/:id", estResponsableOuAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        await deleteJourFerie(id);
+        res.status(200).json({ msg: "Jour férié supprimé avec succès" });
+    } catch (error) {
+        if (error.message === "Jour férié non trouvé") {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: "Erreur lors de la suppression: " + error.message });
         }
     }
 });

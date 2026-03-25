@@ -1,90 +1,67 @@
-<section class="page-section accueil-dashboard">
-    <div class="dashboard-hero">
-        <div>
-            <h1>Bienvenue sur Planify</h1>
-            <p class="dashboard-subtitle">Vue d’ensemble de l’activité de planification</p>
-        </div>
-
-        {{#if user_email}}
-            <div class="user-badge">Connecté : <strong>{{user_email}}</strong></div>
-        {{/if}}
-    </div>
+<section class="page-section accueil">
+    <h1>Bienvenue sur Planify</h1>
+    <p>Gestion des horaires du Collège La Cité</p>
 
     {{#if user_email}}
-        <div class="kpi-grid">
-            <article class="kpi-card">
-                <div class="kpi-head">
-                    <div class="kpi-icon kpi-blue">📚</div>
-                </div>
-                <div class="kpi-value" id="kpi-cours">0</div>
-                <div class="kpi-label">Cours planifiés</div>
-            </article>
+        <div class="user-info">Connecté : <strong>{{user_email}}</strong></div>
 
-            <article class="kpi-card">
-                <div class="kpi-head">
-                    <div class="kpi-icon kpi-purple">📅</div>
-                </div>
-                <div class="kpi-value" id="kpi-affectations">0</div>
-                <div class="kpi-label">Affectations</div>
-            </article>
-
-            <article class="kpi-card">
-                <div class="kpi-head">
-                    <div class="kpi-icon kpi-green">👨‍🏫</div>
-                </div>
-                <div class="kpi-value" id="kpi-prof-occupation">0%</div>
-                <div class="kpi-label">Occupation des professeurs</div>
-            </article>
-
-            <article class="kpi-card">
-                <div class="kpi-head">
-                    <div class="kpi-icon kpi-orange">🏫</div>
-                </div>
-                <div class="kpi-value" id="kpi-salles">0%</div>
-                <div class="kpi-label">Salles utilisées</div>
-            </article>
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">&#128218;</div>
+                <div class="stat-nombre" id="stat-cours">–</div>
+                <div class="stat-label">Cours</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128100;</div>
+                <div class="stat-nombre" id="stat-profs">–</div>
+                <div class="stat-label">Professeurs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#127970;</div>
+                <div class="stat-nombre" id="stat-salles">–</div>
+                <div class="stat-label">Salles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128197;</div>
+                <div class="stat-nombre" id="stat-affectations">–</div>
+                <div class="stat-label">Affectations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">&#128200;</div>
+                <div class="stat-nombre" id="stat-occupation">–</div>
+                <div class="stat-label">Taux d'occupation</div>
+            </div>
         </div>
 
-        <div class="dashboard-grid">
-            <section class="dashboard-card dashboard-card-large">
-                <div class="card-header">
-                    <h2>Affectations par jour</h2>
-                    <p>Répartition hebdomadaire</p>
-                </div>
-                <div class="bar-chart" id="chart-jours"></div>
-            </section>
-
-            <section class="dashboard-card">
-                <div class="card-header">
-                    <h2>Répartition des cours</h2>
-                    <p>Par programme</p>
-                </div>
-                <div class="donut-wrap">
-                    <div class="donut-chart" id="donut-programmes">
-                        <div class="donut-center">
-                            <span id="donut-total">0</span>
-                            <small>cours</small>
-                        </div>
-                    </div>
-                    <div class="legend-list" id="legend-programmes"></div>
-                </div>
-            </section>
-
-            <section class="dashboard-card dashboard-card-wide">
-                <div class="card-header">
-                    <h2>Professeurs les plus sollicités</h2>
-                    <p>Selon le nombre d’affectations</p>
-                </div>
-                <div class="prof-list" id="prof-list"></div>
-            </section>
+        <!-- Navigation rapide -->
+        <h2 class="accueil-sous-titre">Accès rapide</h2>
+        <div class="accueil-grid">
+            <a href="/cours" class="accueil-card">
+                <div class="card-icon">&#128218;</div>
+                <div class="card-title">Cours</div>
+                <div class="card-desc">Gérer les cours du programme</div>
+            </a>
+            <a href="/professeurs" class="accueil-card">
+                <div class="card-icon">&#128100;</div>
+                <div class="card-title">Professeurs</div>
+                <div class="card-desc">Gérer les enseignants</div>
+            </a>
+            <a href="/salles" class="accueil-card">
+                <div class="card-icon">&#127970;</div>
+                <div class="card-title">Salles</div>
+                <div class="card-desc">Gérer les locaux</div>
+            </a>
+            <a href="/affectations" class="accueil-card">
+                <div class="card-icon">&#128197;</div>
+                <div class="card-title">Affectations</div>
+                <div class="card-desc">Planifier les horaires</div>
+            </a>
         </div>
     {{else}}
-        <p>Veuillez vous connecter pour accéder au tableau de bord.</p>
+        <p>Veuillez vous connecter pour accéder aux fonctionnalités.</p>
         <div class="accueil-non-connecte">
             <a href="/connexion">Se connecter</a>
         </div>
     {{/if}}
 </section>
-
-<link rel="stylesheet" href="/css/accueil.css">
-<script src="/js/accueil.js"></script>

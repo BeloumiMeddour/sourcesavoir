@@ -48,8 +48,8 @@ const getUserByEmail = async (email) => {
 };
 
 /**
- * Récupérer tous les utilisateurs
- * @returns liste de tous les utilisateurs
+ * Retourne la liste de tous les utilisateurs (sans le mot de passe)
+ * @returns liste des utilisateurs
  */
 const getUsers = async () => {
     return await prisma.user.findMany({
@@ -61,11 +61,12 @@ const getUsers = async () => {
             prenom: true,
             createdAt: true,
         },
+        orderBy: { createdAt: "desc" },
     });
 };
 
 /**
- * Récupérer un utilisateur par son ID
+ * Retourne un utilisateur par son ID (sans le mot de passe)
  * @param {number} id
  * @returns l'utilisateur correspondant ou null
  */
@@ -84,29 +85,71 @@ const getUserById = async (id) => {
 };
 
 /**
- * Met à jour le rôle d'un utilisateur
+ * Met à jour les informations d'un utilisateur
  * @param {number} id
- * @param {string} role
+ * @param {Object} userData - { email, nom, prenom, role }
  * @returns l'utilisateur mis à jour
  */
-const updateUserRole = async (id, role) => {
+const updateUser = async (id, userData) => {
     const user = await prisma.user.findUnique({
         where: { id: id },
     });
-    
+
     if (!user) {
         throw new Error("Utilisateur non trouvé");
     }
-    
+
+    const { email, nom, prenom, role } = userData;
+
     const updatedUser = await prisma.user.update({
         where: { id: id },
-        data: { role },
+        data: { email, nom, prenom, role },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
     });
+
     return updatedUser;
 };
 
 /**
- * Supprime un utilisateur
+ * Attribue un rôle à un utilisateur
+ * @param {number} id
+ * @param {string} role - "admin" ou "responsable"
+ * @returns l'utilisateur mis à jour
+ */
+const assignRole = async (id, role) => {
+    const user = await prisma.user.findUnique({
+        where: { id: id },
+    });
+
+    if (!user) {
+        throw new Error("Utilisateur non trouvé");
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: { id: id },
+        data: { role: role },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            nom: true,
+            prenom: true,
+            createdAt: true,
+        },
+    });
+
+    return updatedUser;
+};
+
+/**
+ * Supprime un utilisateur par son ID
  * @param {number} id
  * @returns true si l'utilisateur a été supprimé
  */
@@ -114,16 +157,16 @@ const deleteUser = async (id) => {
     const user = await prisma.user.findUnique({
         where: { id: id },
     });
-    
+
     if (!user) {
         throw new Error("Utilisateur non trouvé");
     }
-    
+
     await prisma.user.delete({
         where: { id: id },
     });
-    
+
     return true;
 };
 
-export { createUser, getUserByEmail, getUsers, getUserById, updateUserRole, deleteUser };
+export { createUser, getUserByEmail, getUsers, getUserById, updateUser, assignRole, deleteUser };

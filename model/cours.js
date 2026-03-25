@@ -1,7 +1,7 @@
-// importer le client prisma
+// Importer le client Prisma
 import { PrismaClient } from "@prisma/client";
 
-// Créer une instance du client prisma
+// Créer une instance du client Prisma
 const prisma = new PrismaClient();
 
 /**
@@ -10,15 +10,15 @@ const prisma = new PrismaClient();
  * @returns le cours ajouté
  */
 const addCours = async (coursData) => {
-    const { code, nom, duree, programme, etapeEtude, typeSalle } = coursData;
-    
+    const { code, nom, duree, programme,etapeEtude, typeSalle } = coursData;
+
     const newCours = await prisma.cours.create({
         data: {
             code,
             nom,
-            duree: parseInt(duree),
+            duree,
             programme,
-            etapeEtude: etapeEtude || "",
+            etapeEtude,
             typeSalle,
         },
     });
@@ -26,11 +26,13 @@ const addCours = async (coursData) => {
 };
 
 /**
- * Retourne la liste de tous les cours
+ * Retourne la liste des cours
  * @returns liste des cours
  */
 const getCours = async () => {
-    return await prisma.cours.findMany();
+    return await prisma.cours.findMany({
+        orderBy: { createdAt: "desc" },
+    });
 };
 
 /**
@@ -54,16 +56,16 @@ const updateCours = async (id, coursData) => {
     const cours = await prisma.cours.findUnique({
         where: { id: id },
     });
-    
+
     if (!cours) {
         throw new Error("Cours non trouvé");
     }
-    
+
     const updatedCours = await prisma.cours.update({
         where: { id: id },
         data: coursData,
     });
-    
+
     return updatedCours;
 };
 
@@ -75,74 +77,43 @@ const updateCours = async (id, coursData) => {
 const deleteCours = async (id) => {
     const cours = await prisma.cours.findUnique({
         where: { id: id },
-        include: {
-            affectations: {
-                where: {
-                    date: {
-                        gte: new Date(),
-                    },
-                },
-            },
-        },
+        include: { affectations: true },
     });
-    
+
     if (!cours) {
         throw new Error("Cours non trouvé");
     }
-    
-    // Vérifier si le cours a des affectations futures
-    if (cours.affectations && cours.affectations.length > 0) {
-        throw new Error("Impossible de supprimer ce cours car il a des affectations futures");
+
+    if (cours.affectations.length > 0) {
+        throw new Error("Impossible de supprimer ce cours car il a des affectations planifiées");
     }
-    
+
     await prisma.cours.delete({
         where: { id: id },
     });
-    
+
     return true;
 };
 
 /**
- * Filtre les cours par programme
+ * Retourne les cours par programme
  * @param {string} programme
  * @returns liste des cours de ce programme
  */
 const getCoursByProgramme = async (programme) => {
     return await prisma.cours.findMany({
-        where: { programme },
+        where: { programme: programme },
     });
 };
 
 /**
- * Filtre les cours par durée
- * @param {number} duree
- * @returns liste des cours de cette durée
- */
-const getCoursByDuree = async (duree) => {
-    return await prisma.cours.findMany({
-        where: { duree: parseInt(duree) },
-    });
-};
-
-/**
- * Filtre les cours par type de salle
+ * Retourne les cours par type de salle
  * @param {string} typeSalle
- * @returns liste des cours nécessitant ce type de salle
+ * @returns liste des cours de ce type de salle
  */
 const getCoursByTypeSalle = async (typeSalle) => {
     return await prisma.cours.findMany({
-        where: { typeSalle },
-    });
-};
-
-/**
- * Filtre les cours par étape d'étude
- * @param {string} etapeEtude
- * @returns liste des cours de cette étape d'étude
- */
-const getCoursByEtapeEtude = async (etapeEtude) => {
-    return await prisma.cours.findMany({
-        where: { etapeEtude },
+        where: { typeSalle: typeSalle },
     });
 };
 
@@ -153,7 +124,5 @@ export {
     updateCours,
     deleteCours,
     getCoursByProgramme,
-    getCoursByDuree,
     getCoursByTypeSalle,
-    getCoursByEtapeEtude,
 };
