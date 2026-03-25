@@ -71,7 +71,7 @@ const router = Router();
 import passport from "passport";
 
 // Importation des middlewares d'authentification
-import { estAuthentifie, estAdmin, estResponsableOuAdmin } from "./middleware/auth.js";
+import { estAuthentifie, estAdmin } from "./middleware/auth.js";
 
 /* ===========================
    AUTHENTIFICATION
@@ -275,7 +275,7 @@ router.get("/admin", estAdmin, (req, res) => {
 });
 
 // Page gestion des semestres et jours fériés
-router.get("/gerer-semestres", estResponsableOuAdmin, (req, res) => {
+router.get("/gerer-semestres", estAuthentifie, (req, res) => {
     res.render("gerer-semestres", {
         titre: "Gérer les Semestres | Planify",
         styles: [],
@@ -386,7 +386,7 @@ router.delete("/api/utilisateurs/:id", estAdmin, async (req, res) => {
 =========================== */
 
 // Ajouter un cours
-router.post("/api/cours", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/cours", estAuthentifie, async (req, res) => {
     try {
         const cours = await addCours(req.body);
         res.status(201).json({ msg: "Cours ajouté avec succès", cours });
@@ -434,7 +434,7 @@ router.get("/api/cours/:id", estAuthentifie, async (req, res) => {
 });
 
 // Modifier un cours
-router.put("/api/cours/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/cours/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const cours = await updateCours(id, req.body);
@@ -449,7 +449,7 @@ router.put("/api/cours/:id", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Supprimer un cours
-router.delete("/api/cours/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/cours/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteCours(id);
@@ -470,7 +470,7 @@ router.delete("/api/cours/:id", estResponsableOuAdmin, async (req, res) => {
 =========================== */
 
 // Ajouter un professeur
-router.post("/api/professeurs", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/professeurs", estAuthentifie, async (req, res) => {
     try {
         const professeur = await addProfesseur(req.body);
         res.status(201).json({ msg: "Professeur ajouté avec succès", professeur });
@@ -564,7 +564,7 @@ router.get("/api/professeurs/:id/charge-horaire", estAuthentifie, async (req, re
 });
 
 // Modifier un professeur
-router.put("/api/professeurs/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/professeurs/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const professeur = await updateProfesseur(id, req.body);
@@ -579,7 +579,7 @@ router.put("/api/professeurs/:id", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Supprimer un professeur
-router.delete("/api/professeurs/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/professeurs/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteProfesseur(id);
@@ -600,7 +600,7 @@ router.delete("/api/professeurs/:id", estResponsableOuAdmin, async (req, res) =>
 =========================== */
 
 // Ajouter une salle
-router.post("/api/salles", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/salles", estAuthentifie, async (req, res) => {
     try {
         const salle = await addSalle(req.body);
         res.status(201).json({ msg: "Salle ajoutée avec succès", salle });
@@ -672,7 +672,7 @@ router.get("/api/salles/:id/charge-horaire", estAuthentifie, async (req, res) =>
 });
 
 // Modifier une salle
-router.put("/api/salles/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/salles/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const salle = await updateSalle(id, req.body);
@@ -687,7 +687,7 @@ router.put("/api/salles/:id", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Supprimer une salle
-router.delete("/api/salles/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/salles/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteSalle(id);
@@ -708,7 +708,7 @@ router.delete("/api/salles/:id", estResponsableOuAdmin, async (req, res) => {
 =========================== */
 
 // Ajouter une disponibilité pour un professeur
-router.post("/api/disponibilites", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/disponibilites", estAuthentifie, async (req, res) => {
     try {
         const dispo = await addDisponibilite(req.body);
         res.status(201).json({ msg: "Disponibilité ajoutée avec succès", dispo });
@@ -729,7 +729,7 @@ router.get("/api/disponibilites/professeur/:id", estAuthentifie, async (req, res
 });
 
 // Modifier une disponibilité
-router.put("/api/disponibilites/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/disponibilites/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const dispo = await updateDisponibilite(id, req.body);
@@ -744,7 +744,7 @@ router.put("/api/disponibilites/:id", estResponsableOuAdmin, async (req, res) =>
 });
 
 // Supprimer une disponibilité
-router.delete("/api/disponibilites/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/disponibilites/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteDisponibilite(id);
@@ -763,7 +763,7 @@ router.delete("/api/disponibilites/:id", estResponsableOuAdmin, async (req, res)
 =========================== */
 
 // Affecter un cours à une salle (date + plage horaire)
-router.post("/api/affectations", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/affectations", estAuthentifie, async (req, res) => {
     try {
         // Si 'jour' est fourni, créer une affectation template pour le semestre
         if (req.body.jour !== undefined && req.body.jour !== null) {
@@ -787,7 +787,7 @@ router.post("/api/affectations", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Assigner un professeur à une affectation
-router.put("/api/affectations/:id/professeur", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/affectations/:id/professeur", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     const { id_professeur } = req.body;
     try {
@@ -851,7 +851,7 @@ router.get("/api/affectations/professeur/:id", estAuthentifie, async (req, res) 
 });
 
 // Modifier une affectation
-router.put("/api/affectations/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/affectations/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const affectation = await updateAffectation(id, req.body);
@@ -868,7 +868,7 @@ router.put("/api/affectations/:id", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Supprimer une affectation
-router.delete("/api/affectations/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/affectations/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteAffectation(id);
@@ -887,7 +887,7 @@ router.delete("/api/affectations/:id", estResponsableOuAdmin, async (req, res) =
 =========================== */
 
 // Créer un semestre
-router.post("/api/semestres", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/semestres", estAuthentifie, async (req, res) => {
     try {
         const { nom, dateDebut, dateFin } = req.body;
         const semestre = await addSemestre(nom, dateDebut, dateFin);
@@ -926,7 +926,7 @@ router.get("/api/semestres/:id", estAuthentifie, async (req, res) => {
 });
 
 // Modifier un semestre
-router.put("/api/semestres/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/semestres/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const semestre = await updateSemestre(id, req.body);
@@ -941,7 +941,7 @@ router.put("/api/semestres/:id", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Supprimer un semestre
-router.delete("/api/semestres/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/semestres/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteSemestre(id);
@@ -960,7 +960,7 @@ router.delete("/api/semestres/:id", estResponsableOuAdmin, async (req, res) => {
 =========================== */
 
 // Ajouter un jour férié à un semestre
-router.post("/api/semestres/:id_semestre/jours-feries", estResponsableOuAdmin, async (req, res) => {
+router.post("/api/semestres/:id_semestre/jours-feries", estAuthentifie, async (req, res) => {
     const id_semestre = parseInt(req.params.id_semestre);
     const { date, description } = req.body;
     try {
@@ -1001,7 +1001,7 @@ router.get("/api/jours-feries/:id", estAuthentifie, async (req, res) => {
 });
 
 // Modifier un jour férié
-router.put("/api/jours-feries/:id", estResponsableOuAdmin, async (req, res) => {
+router.put("/api/jours-feries/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         const jourFerie = await updateJourFerie(id, req.body);
@@ -1016,7 +1016,7 @@ router.put("/api/jours-feries/:id", estResponsableOuAdmin, async (req, res) => {
 });
 
 // Supprimer un jour férié
-router.delete("/api/jours-feries/:id", estResponsableOuAdmin, async (req, res) => {
+router.delete("/api/jours-feries/:id", estAuthentifie, async (req, res) => {
     const id = parseInt(req.params.id);
     try {
         await deleteJourFerie(id);

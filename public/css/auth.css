@@ -46,10 +46,40 @@
     z-index: 10;
 }
 
+.auth-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.auth-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.auth-app-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--rouge-lacite);
+    letter-spacing: 0.02em;
+}
+
+.auth-app-desc {
+    font-size: 0.75rem;
+    color: var(--gris-texte);
+    font-weight: 500;
+}
+
 #form-auth h2 {
     text-align: center;
-    color: var(--rouge-lacite);
+    color: var(--noir);
     margin-bottom: 0.25rem;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 #form-auth label {

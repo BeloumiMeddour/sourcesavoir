@@ -241,7 +241,18 @@ main {
 .sidebar-icon {
     font-size: 1.1rem;
     width: 24px;
+    height: 24px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+    stroke: currentColor;
+}
+
+.sidebar-icon[viewBox] {
+    width: 20px;
+    height: 20px;
 }
 
 .sidebar-footer {
