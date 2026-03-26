@@ -35,26 +35,33 @@ function plagesSeChevauchent(plage1, plage2) {
  * @param {number|null} exclureId - ID d'affectation à exclure (pour les mises à jour)
  * @returns true si la salle est occupée
  */
-const verifierConflitSalle = async (id_salle, date, plageHoraire, exclureId = null) => {
-    // Chercher les affectations avec la même date spécifique
+const verifierConflitSalle = async (id_salle, date, plageHoraire, exclureId = null, id_semestre = null) => {
+    // Chercher les affectations avec la même date spécifique et le même semestre
     const where = {
         id_salle: id_salle,
         date: date,
     };
+    if (id_semestre !== null) {
+        where.id_semestre = id_semestre;
+    }
     if (exclureId) {
         where.id = { not: exclureId };
     }
 
     const affectationsDate = await prisma.affectationCours.findMany({ where });
 
-    // Chercher aussi les affectations par jour (date=null) qui correspondent au même jour de la semaine
+    // Chercher aussi les affectations par jour (date=null) qui correspondent au même jour de la semaine et semestre
     const jourDeLaSemaine = date.getDay();
+    const whereJour = {
+        id_salle: id_salle,
+        date: null,
+        jour: jourDeLaSemaine.toString(),
+    };
+    if (id_semestre !== null) {
+        whereJour.id_semestre = id_semestre;
+    }
     const affectationsJour = await prisma.affectationCours.findMany({
-        where: {
-            id_salle: id_salle,
-            date: null,
-            jour: jourDeLaSemaine.toString(),
-        },
+        where: whereJour,
     });
 
     const toutesAffectations = [...affectationsDate, ...affectationsJour];
@@ -72,26 +79,33 @@ const verifierConflitSalle = async (id_salle, date, plageHoraire, exclureId = nu
  * @param {number|null} exclureId - ID d'affectation à exclure (pour les mises à jour)
  * @returns true si le professeur est occupé
  */
-const verifierConflitProfesseur = async (id_professeur, date, plageHoraire, exclureId = null) => {
-    // Chercher les affectations avec la même date spécifique
+const verifierConflitProfesseur = async (id_professeur, date, plageHoraire, exclureId = null, id_semestre = null) => {
+    // Chercher les affectations avec la même date spécifique et le même semestre
     const where = {
         id_professeur: id_professeur,
         date: date,
     };
+    if (id_semestre !== null) {
+        where.id_semestre = id_semestre;
+    }
     if (exclureId) {
         where.id = { not: exclureId };
     }
 
     const affectationsDate = await prisma.affectationCours.findMany({ where });
 
-    // Chercher aussi les affectations par jour (date=null) qui correspondent au même jour de la semaine
+    // Chercher aussi les affectations par jour (date=null) qui correspondent au même jour de la semaine et semestre
     const jourDeLaSemaine = date.getDay();
+    const whereJour = {
+        id_professeur: id_professeur,
+        date: null,
+        jour: jourDeLaSemaine.toString(),
+    };
+    if (id_semestre !== null) {
+        whereJour.id_semestre = id_semestre;
+    }
     const affectationsJour = await prisma.affectationCours.findMany({
-        where: {
-            id_professeur: id_professeur,
-            date: null,
-            jour: jourDeLaSemaine.toString(),
-        },
+        where: whereJour,
     });
 
     const toutesAffectations = [...affectationsDate, ...affectationsJour];
@@ -110,14 +124,14 @@ const affecterCoursASalle = async (affectationData) => {
     const { id_cours, id_salle, date, plageHoraire, id_semestre, id_professeur, session } = affectationData;
 
     // Vérifier si la salle est déjà occupée
-    const salleOccupee = await verifierConflitSalle(id_salle, new Date(date), plageHoraire);
+    const salleOccupee = await verifierConflitSalle(id_salle, new Date(date), plageHoraire, null, id_semestre || null);
     if (salleOccupee) {
         throw new Error("Conflit : cette salle est déjà occupée à cette date et plage horaire");
     }
 
     // Vérifier si le professeur est déjà occupé (si fourni)
     if (id_professeur) {
-        const profOccupe = await verifierConflitProfesseur(id_professeur, new Date(date), plageHoraire);
+        const profOccupe = await verifierConflitProfesseur(id_professeur, new Date(date), plageHoraire, null, id_semestre || null);
         if (profOccupe) {
             throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire");
         }
@@ -176,14 +190,14 @@ const affecterCoursAuSemestre = async (affectationData) => {
     const joursAAvancer = (jour - jourActuel + 7) % 7;
     dateActuelle.setDate(dateActuelle.getDate() + joursAAvancer);
     
-    const salleOccupee = await verifierConflitSalle(id_salle, dateActuelle, plageHoraire);
+    const salleOccupee = await verifierConflitSalle(id_salle, dateActuelle, plageHoraire, null, id_semestre);
     if (salleOccupee) {
         throw new Error("Conflit : cette salle est déjà occupée à ce jour et cette plage horaire");
     }
 
     // Vérifier si le professeur est déjà occupé (si fourni)
     if (id_professeur) {
-        const profOccupe = await verifierConflitProfesseur(id_professeur, dateActuelle, plageHoraire);
+        const profOccupe = await verifierConflitProfesseur(id_professeur, dateActuelle, plageHoraire, null, id_semestre);
         if (profOccupe) {
             throw new Error("Conflit : ce professeur est déjà assigné à un cours à ce jour et cette plage horaire");
         }
@@ -482,7 +496,20 @@ const getProfesseursAvecDisponibilitePourSlot = async (id_semestre, jour, debut,
         }
 
         // Calculer les heures libres ce jour = fenêtre déclarée - déjà affectées ce jour
-        const affectationsJour = affectationsProf.filter(a => a.jour === jour.toString());
+        // Inclure les affectations récurrentes ET les affectations avec date spécifique le même jour
+        const affectationsJour = affectationsProf.filter(function(a) {
+            // Affectations récurrentes avec le bon jour
+            if (a.jour === jour.toString()) return true;
+            
+            // Affectations avec date spécifique qui tombent le même jour de la semaine
+            if (a.date !== null) {
+                const dateAff = new Date(a.date);
+                return dateAff.getDay() === parseInt(jour);
+            }
+            
+            return false;
+        });
+        
         const minutesOccupees = affectationsJour.reduce(function (sum, a) {
             const [d, f] = a.plageHoraire.split("-").map(heureEnMinutes);
             return sum + (f - d);

@@ -19,6 +19,8 @@ var semestres = [];
 var joursFeeries = [];
 var semestreActif = null;
 var semaineCourante = getDebutSemaine(new Date());
+var dateDebutSemestre = null;
+var dateFinSemestre = null;
 
 // --- Fonctions utilitaires pour les dates ---
 
@@ -70,15 +72,19 @@ async function chargerSemestres() {
             return;
         }
         semestres = await res.json();
+        // Trier du plus récent au plus ancien (dateDebut décroissante)
+        semestres.sort(function(a, b) {
+            return new Date(b.dateDebut) - new Date(a.dateDebut);
+        });
         console.log("Semestres chargés:", semestres);
-        
+
         // Remplir le select existant
         var selectSemestre = document.getElementById("select-semestre");
         if (!selectSemestre) {
             console.error("Element select-semestre non trouvé dans le DOM");
             return;
         }
-        
+
         semestres.forEach(function(s) {
             var opt = document.createElement("option");
             opt.value = s.id;
@@ -90,9 +96,17 @@ async function chargerSemestres() {
         selectSemestre.addEventListener("change", function() {
             semestreActif = parseInt(this.value) || null;
             if (semestreActif) {
+                var semestre = semestres.find(function(s) { return s.id === semestreActif; });
+                if (semestre) {
+                    dateDebutSemestre = new Date(semestre.dateDebut);
+                    dateFinSemestre = new Date(semestre.dateFin);
+                    semaineCourante = getDebutSemaine(dateDebutSemestre);
+                }
                 chargerJoursFeeries(semestreActif);
             } else {
                 joursFeeries = [];
+                dateDebutSemestre = null;
+                dateFinSemestre = null;
             }
             dessinerGrille();
         });
@@ -358,17 +372,37 @@ function dessinerGrille() {
 // --- Navigation : semaine précédente / suivante ---
 
 document.getElementById("btn-prec").addEventListener("click", function () {
-    semaineCourante = ajouterJours(semaineCourante, -7);
+    var nouvelleSemaine = ajouterJours(semaineCourante, -7);
+    // Si un semestre est actif, vérifier les limites
+    if (semestreActif && dateDebutSemestre) {
+        if (nouvelleSemaine < dateDebutSemestre) {
+            return; // Ne pas aller avant le début du semestre
+        }
+    }
+    semaineCourante = nouvelleSemaine;
     dessinerGrille();
 });
 
 document.getElementById("btn-suiv").addEventListener("click", function () {
-    semaineCourante = ajouterJours(semaineCourante, 7);
+    var nouvelleSemaine = ajouterJours(semaineCourante, 7);
+    // Si un semestre est actif, vérifier les limites
+    if (semestreActif && dateFinSemestre) {
+        if (nouvelleSemaine > dateFinSemestre) {
+            return; // Ne pas aller au-delà de la fin du semestre
+        }
+    }
+    semaineCourante = nouvelleSemaine;
     dessinerGrille();
 });
 
 document.getElementById("btn-aujourdhui").addEventListener("click", function () {
-    semaineCourante = getDebutSemaine(new Date());
+    // Si un semestre est actif, aller à la première semaine du semestre
+    // Sinon, aller à la semaine d'aujourd'hui
+    if (semestreActif && dateDebutSemestre) {
+        semaineCourante = getDebutSemaine(dateDebutSemestre);
+    } else {
+        semaineCourante = getDebutSemaine(new Date());
+    }
     dessinerGrille();
 });
 
