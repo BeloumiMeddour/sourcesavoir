@@ -1,0 +1,115 @@
+/* ==============================================
+   PAGE SALLES — EPlanify
+   Organisé par parties :
+     1. BADGES TYPE DE SALLE
+     2. INDICATEUR CAPACITÉ
+     3. BARRE OCCUPATION SALLE
+     4. TABLEAU SALLES
+     5. RESPONSIVE
+============================================== */
+
+/* ── 1. BADGES TYPE DE SALLE ─────────────── */
+
+.badge-salle-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.22rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.badge-salle-classe {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-salle-labo {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-salle-amphi {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+.badge-salle-informatique {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* ── 2. INDICATEUR CAPACITÉ ───────────────── */
+
+.capacite-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--gris-fonce);
+}
+
+.capacite-chip::before {
+    content: '👥';
+    font-size: 0.75rem;
+}
+
+/* ── 3. BARRE OCCUPATION SALLE ────────────── */
+
+.salle-charge-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.salle-charge-bar-wrap {
+    height: 7px;
+    background: var(--gris-fond);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 80px;
+}
+
+.salle-charge-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.salle-charge-bar.bas   { background: var(--vert); }
+.salle-charge-bar.moyen { background: var(--orange); }
+.salle-charge-bar.haut  { background: var(--rouge); }
+
+.salle-charge-text {
+    font-size: 0.76rem;
+    color: var(--gris-texte);
+    font-weight: 500;
+}
+
+/* ── 4. TABLEAU SALLES ────────────────────── */
+
+#table-salles td {
+    vertical-align: middle;
+}
+
+.salle-code {
+    font-weight: 700;
+    color: var(--rouge-lacite);
+    font-size: 0.9rem;
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* ── 5. RESPONSIVE ────────────────────────── */
+
+@media (max-width: 600px) {
+    .badge-salle-type {
+        font-size: 0.68rem;
+        padding: 0.18rem 0.45rem;
+    }
+}

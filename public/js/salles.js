@@ -1,28 +1,49 @@
 // === GESTION DES SALLES ===
 
-import { afficherMessage } from './utils.js';
+import { afficherMessage, activerTriTableau } from './utils.js';
 
-const formSalle = document.getElementById("form-salle");
-const msgSalle = document.getElementById("msg-salle");
-const tbody = document.querySelector("#table-salles tbody");
-const btnToggle = document.getElementById("btn-toggle-form");
-const formCard = document.getElementById("form-card");
-const searchInput = document.getElementById("search-salles");
-const modale = document.getElementById("modale-modifier");
+let formSalle;
+let msgSalle;
+let tbody;
+let btnToggle;
+let formCard;
+let searchInput;
+let modale;
 
-// Toggle formulaire
-btnToggle.addEventListener("click", function () {
-    formCard.classList.toggle("hidden");
-});
+function initDOMElements() {
+    formSalle = document.getElementById("form-salle");
+    msgSalle = document.getElementById("msg-salle");
+    tbody = document.querySelector("#table-salles tbody");
+    btnToggle = document.getElementById("btn-toggle-form");
+    formCard = document.getElementById("form-card");
+    searchInput = document.getElementById("search-salles");
+    modale = document.getElementById("modale-modifier");
+    if (modale) {
+        document.getElementById("mod-annuler").onclick = fermerModale;
+        modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+    }
+    if (formSalle) {
+        formSalle.addEventListener("submit", onFormSalleSubmit);
+    }
 
-// Recherche
-searchInput.addEventListener("input", function () {
-    var terme = searchInput.value.toLowerCase();
-    var lignes = tbody.querySelectorAll("tr");
-    lignes.forEach(function (tr) {
-        tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
-    });
-});
+    // Toggle formulaire
+    if (btnToggle) {
+        btnToggle.addEventListener("click", function () {
+            formCard.classList.toggle("hidden");
+        });
+    }
+    
+    // Recherche
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            var terme = searchInput.value.toLowerCase();
+            var lignes = tbody.querySelectorAll("tr");
+            lignes.forEach(function (tr) {
+                tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
+            });
+        });
+    }
+}
 
 async function chargerSalles() {
     var response = await fetch("/api/salles");
@@ -48,7 +69,7 @@ async function chargerSalles() {
     });
 }
 
-formSalle.addEventListener("submit", async function (event) {
+async function onFormSalleSubmit(event) {
     event.preventDefault();
 
     var data = {
@@ -74,15 +95,12 @@ formSalle.addEventListener("submit", async function (event) {
         var err = await response.json();
         afficherMessage(msgSalle, err.error || "Erreur.", "erreur");
     }
-});
+}
 
 // Fermer la modale
 function fermerModale() {
     modale.style.display = "none";
 }
-
-document.getElementById("mod-annuler").onclick = fermerModale;
-modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
 
 window.modifierSalle = function (id) {
     var tr = document.querySelector('tr[data-id="' + id + '"]');
@@ -130,4 +148,8 @@ window.supprimerSalle = async function (id) {
     }
 };
 
-chargerSalles();
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+    chargerSalles();
+    activerTriTableau("table-salles");
+});

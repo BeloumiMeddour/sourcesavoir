@@ -1,9 +1,18 @@
 import { isEmailValid, isPasswordValid } from "./validation.js";
 
-const inputCourriel = document.getElementById("input-courriel");
-const inputMotDePasse = document.getElementById("input-mot-de-passe");
-const formAuth = document.getElementById("form-auth");
-const erreurs = document.getElementById("erreurs");
+let inputCourriel;
+let inputMotDePasse;
+let formAuth;
+let erreurs;
+
+function initDOMElements() {
+    inputCourriel = document.getElementById("input-courriel");
+    inputMotDePasse = document.getElementById("input-mot-de-passe");
+    formAuth = document.getElementById("form-auth");
+    erreurs = document.getElementById("erreurs");
+    
+    formAuth.addEventListener("submit", connexion);
+}
 
 async function connexion(event) {
     event.preventDefault();
@@ -56,4 +65,6 @@ async function connexion(event) {
     }
 }
 
-formAuth.addEventListener("submit", connexion);
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+});

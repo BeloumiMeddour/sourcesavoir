@@ -26,7 +26,6 @@ async function loadDashboard() {
 
     run(renderKPI,      courses, profs, rooms, affectations);
     run(renderHeatmap,  affectations);
-    run(renderAlerts,   rooms,   affectations);
     run(renderTopProfs, profs,   affectations);
     run(renderTopSalles,rooms,   affectations);
     run(renderTaux,     courses, affectations);
@@ -167,48 +166,6 @@ function renderTaux(courses, affectations) {
 }
 
 // ── ALERTES ───────────────────────────────────────────────────
-function renderAlerts(rooms, affectations) {
-    const list = document.getElementById('alerts-list');
-    if (!list) return;
-    list.innerHTML = '';
-
-    const roomMap = {};
-    rooms.forEach(r => { roomMap[r.id] = { code: r.code, count: 0 }; });
-    affectations.forEach(a => {
-        if (roomMap[a.id_salle]) roomMap[a.id_salle].count++;
-    });
-
-    const warnSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
-    const okSvg   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
-
-    let hasAlert = false;
-
-    Object.values(roomMap).forEach(r => {
-        if (r.count > 8) {
-            hasAlert = true;
-            const isCrit = r.count > 10;
-            addAlert(list, isCrit ? 'alert-crit' : 'alert-warn', warnSvg,
-                `<strong>${r.code}</strong> — ${r.count} créneaux${isCrit ? ' (critique)' : ''}`);
-        }
-    });
-
-    if (affectations.length === 0) {
-        hasAlert = true;
-        addAlert(list, 'alert-warn', warnSvg, 'Aucun cours affecté pour le moment');
-    }
-
-    if (!hasAlert) {
-        addAlert(list, 'alert-ok', okSvg, 'Aucun problème détecté');
-    }
-}
-
-function addAlert(list, cls, iconHtml, msg) {
-    const div = document.createElement('div');
-    div.className = `alert-row ${cls}`;
-    div.innerHTML = `${iconHtml}<div>${msg}</div>`;
-    list.appendChild(div);
-}
-
 // ── TOP PROFS ─────────────────────────────────────────────────
 function renderTopProfs(profs, affectations) {
     const map = {};

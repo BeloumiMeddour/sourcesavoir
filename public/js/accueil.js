@@ -15,4 +15,6 @@ async function chargerStatistiques() {
     }
 }
 
-chargerStatistiques();
+document.addEventListener('DOMContentLoaded', function() {
+    chargerStatistiques();
+});

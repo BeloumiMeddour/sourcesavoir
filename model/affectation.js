@@ -461,26 +461,41 @@ const calculerChargeHoraireSalle = async (id_salle, id_semestre) => {
  * @returns tableau de professeurs avec statut: "disponible" | "hors_plage" | "pas_dispo" | "conflit" | "complet"
  */
 const getProfesseursAvecDisponibilitePourSlot = async (id_semestre, jour, debut, fin) => {
-    const joursNoms = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-    const nomJour = joursNoms[parseInt(jour)];
+    // Normaliser le jour : accepte "Lundi" (string) ou "1" (number)
+    let nomJour = jour;
+    if (!isNaN(jour)) {
+        const joursNoms = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+        nomJour = joursNoms[parseInt(jour)];
+    }
+    
     const plageDemandeStr = debut + "-" + fin;
     const debutMin = heureEnMinutes(debut);
     const finMin = heureEnMinutes(fin);
 
-    // 2 requêtes seulement pour tous les profs
+    // Récupérer tous les professeurs et affectations du semestre
     const [professeurs, toutesAffectations] = await Promise.all([
-        prisma.professeur.findMany({ include: { disponibilites: true } }),
-        prisma.affectationCours.findMany({ where: { id_semestre: id_semestre } }),
+        prisma.professeur.findMany({ 
+            include: { disponibilites: true } 
+        }),
+        prisma.affectationCours.findMany({ 
+            where: { id_semestre: parseInt(id_semestre) } 
+        }),
     ]);
 
     return professeurs.map(function (prof) {
+        // Affectations du prof pour ce semestre
         const affectationsProf = toutesAffectations.filter(a => a.id_professeur === prof.id);
 
-        // Disponibilité déclarée pour ce jour
+        // Chercher la disponibilité pour ce jour
         const dispoJour = prof.disponibilites.find(d => d.jour === nomJour);
 
         if (!dispoJour) {
-            return { id: prof.id, nom: prof.nom, prenom: prof.prenom, statut: "pas_dispo" };
+            return { 
+                id: prof.id, 
+                nom: prof.nom, 
+                prenom: prof.prenom, 
+                statut: "pas_dispo" 
+            };
         }
 
         // Vérifier que la plage demandée est dans la plage déclarée
@@ -490,46 +505,46 @@ const getProfesseursAvecDisponibilitePourSlot = async (id_semestre, jour, debut,
 
         if (debutMin < dispoDebutMin || finMin > dispoFinMin) {
             return {
-                id: prof.id, nom: prof.nom, prenom: prof.prenom,
-                plageDeclaree: dispoJour.plageHoraire, statut: "hors_plage",
+                id: prof.id, 
+                nom: prof.nom, 
+                prenom: prof.prenom,
+                plageDeclaree: dispoJour.plageHoraire, 
+                statut: "hors_plage",
             };
         }
 
-        // Calculer les heures libres ce jour = fenêtre déclarée - déjà affectées ce jour
-        // Inclure les affectations récurrentes ET les affectations avec date spécifique le même jour
-        const affectationsJour = affectationsProf.filter(function(a) {
-            // Affectations récurrentes avec le bon jour
-            if (a.jour === jour.toString()) return true;
-            
-            // Affectations avec date spécifique qui tombent le même jour de la semaine
-            if (a.date !== null) {
-                const dateAff = new Date(a.date);
-                return dateAff.getDay() === parseInt(jour);
-            }
-            
-            return false;
-        });
+        // Affectations du prof pour ce jour (même jour français)
+        const affectationsJour = affectationsProf.filter(a => a.jour === nomJour);
         
+        // Calculer heures occupées ce jour
         const minutesOccupees = affectationsJour.reduce(function (sum, a) {
             const [d, f] = a.plageHoraire.split("-").map(heureEnMinutes);
             return sum + (f - d);
         }, 0);
+        
         const minutesDispo = dispoFinMin - dispoDebutMin;
-        const heuresLibres = Math.round((minutesDispo - minutesOccupees) / 60);
+        const minutesLibres = minutesDispo - minutesOccupees;
+        const heuresLibres = Math.round(minutesLibres / 60);
         const dureeDemandeMin = finMin - debutMin;
 
-        // Vérifier les conflits (chevauchement)
+        // Vérifier les conflits
         const hasConflit = affectationsJour.some(a => plagesSeChevauchent(plageDemandeStr, a.plageHoraire));
 
         let statut;
-        if (hasConflit) statut = "conflit";
-        else if (dureeDemandeMin > minutesDispo - minutesOccupees) statut = "complet";
-        else statut = "disponible";
+        if (hasConflit) {
+            statut = "conflit";
+        } else if (dureeDemandeMin > minutesLibres) {
+            statut = "complet";
+        } else {
+            statut = "disponible";
+        }
 
         return {
-            id: prof.id, nom: prof.nom, prenom: prof.prenom,
+            id: prof.id, 
+            nom: prof.nom, 
+            prenom: prof.prenom,
             plageDeclaree: dispoJour.plageHoraire,
-            heuresLibres,
+            heuresLibres: Math.max(0, heuresLibres),
             creneauxOccupes: affectationsJour.map(a => a.plageHoraire),
             statut,
         };

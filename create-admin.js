@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 (async () => {
   try {
-    const hashedPassword = await bcrypt.hash('Admin123', 10);
+    const hashedPassword = await bcrypt.hash('Admin123!', 10);
     const user = await prisma.user.upsert({
       where: { email: 'admin@lacite.ca' },
       update: { password: hashedPassword, role: 'admin' },

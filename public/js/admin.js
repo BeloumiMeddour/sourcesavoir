@@ -1,28 +1,49 @@
 // === ADMINISTRATION - GESTION DES COMPTES ===
 
-import { afficherMessage } from './utils.js';
+import { afficherMessage, activerTriTableau } from './utils.js';
 
-const formUtilisateur = document.getElementById("form-utilisateur");
-const msgAdmin = document.getElementById("msg-admin");
-const tbody = document.querySelector("#table-utilisateurs tbody");
-const btnToggle = document.getElementById("btn-toggle-form");
-const formCard = document.getElementById("form-card");
-const searchInput = document.getElementById("search-users");
-const modale = document.getElementById("modale-modifier");
+let formUtilisateur;
+let msgAdmin;
+let tbody;
+let btnToggle;
+let formCard;
+let searchInput;
+let modale;
 
-// Toggle formulaire
-btnToggle.addEventListener("click", function () {
-    formCard.classList.toggle("hidden");
-});
+function initDOMElements() {
+    formUtilisateur = document.getElementById("form-utilisateur");
+    msgAdmin = document.getElementById("msg-admin");
+    tbody = document.querySelector("#table-utilisateurs tbody");
+    btnToggle = document.getElementById("btn-toggle-form");
+    formCard = document.getElementById("form-card");
+    searchInput = document.getElementById("search-users");
+    modale = document.getElementById("modale-modifier");
+    if (modale) {
+        document.getElementById("mod-annuler").onclick = fermerModale;
+        modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+    }
+    if (formUtilisateur) {
+        formUtilisateur.addEventListener("submit", onFormUtilisateurSubmit);
+    }
 
-// Recherche
-searchInput.addEventListener("input", function () {
-    const terme = searchInput.value.toLowerCase();
-    const lignes = tbody.querySelectorAll("tr");
-    lignes.forEach(function (tr) {
-        tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
-    });
-});
+    // Toggle formulaire
+    if (btnToggle) {
+        btnToggle.addEventListener("click", function () {
+            formCard.classList.toggle("hidden");
+        });
+    }
+    
+    // Recherche
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const terme = searchInput.value.toLowerCase();
+            const lignes = tbody.querySelectorAll("tr");
+            lignes.forEach(function (tr) {
+                tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
+            });
+        });
+    }
+}
 
 // Charger la liste des utilisateurs
 async function chargerUtilisateurs() {
@@ -54,7 +75,7 @@ async function chargerUtilisateurs() {
 }
 
 // Créer un utilisateur
-formUtilisateur.addEventListener("submit", async function (event) {
+async function onFormUtilisateurSubmit(event) {
     event.preventDefault();
 
     const data = {
@@ -80,15 +101,12 @@ formUtilisateur.addEventListener("submit", async function (event) {
         var err = await response.json();
         afficherMessage(msgAdmin, err.error || "Erreur lors de la création.", "erreur");
     }
-});
+}
 
 // Fermer la modale
 function fermerModale() {
     modale.style.display = "none";
 }
-
-document.getElementById("mod-annuler").onclick = fermerModale;
-modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
 
 // Modifier un utilisateur
 window.modifierRole = function (id) {
@@ -140,4 +158,8 @@ window.supprimerUtilisateur = async function (id) {
     }
 };
 
-chargerUtilisateurs();
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+    chargerUtilisateurs();
+});
+activerTriTableau("table-utilisateurs");

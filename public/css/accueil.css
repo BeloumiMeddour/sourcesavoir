@@ -1,19 +1,29 @@
 /* ==============================================
    DASHBOARD ACCUEIL — EPlanify
-   Approche : heatmap + insights compacts
+   Organisé par parties :
+     1. KPI STRIP
+     2. LAYOUT PRINCIPAL
+     3. DASH CARD (base)
+     4. HEATMAP
+     5. TAUX CARD
+     6. ALERTES
+     7. TOP LISTS
+     8. GUEST (non connecté)
+     9. RESPONSIVE
 ============================================== */
 
-/* ── KPI STRIP ─────────────────────────────── */
+/* ── 1. KPI STRIP ─────────────────────────── */
 
 .kpi-strip {
     display: flex;
     align-items: center;
     background: var(--blanc);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--ombre);
     padding: 0;
     margin-bottom: 1.25rem;
     overflow: hidden;
+    border: 1px solid var(--gris-bordure);
 }
 
 .kpi-chip {
@@ -438,6 +448,12 @@
 .guest-wall {
     text-align: center;
     padding: 5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    margin: 0 auto;
 }
 
 .guest-icon {

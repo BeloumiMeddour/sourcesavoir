@@ -1,26 +1,48 @@
 // === GESTION DES PROFESSEURS ===
 
-import { afficherMessage } from './utils.js';
+import { afficherMessage, activerTriTableau } from './utils.js';
 
-const formProfesseur = document.getElementById("form-professeur");
-const msgProfesseur = document.getElementById("msg-professeur");
-const tbody = document.querySelector("#table-professeurs tbody");
-const btnToggle = document.getElementById("btn-toggle-form");
-const formCard = document.getElementById("form-card");
-const searchInput = document.getElementById("search-profs");
-const modale = document.getElementById("modale-modifier");
+let formProfesseur;
+let msgProfesseur;
+let tbody;
+let btnToggle;
+let formCard;
+let searchInput;
+let modale;
 
-btnToggle.addEventListener("click", function () {
-    formCard.classList.toggle("hidden");
-});
+function initDOMElements() {
+    formProfesseur = document.getElementById("form-professeur");
+    msgProfesseur = document.getElementById("msg-professeur");
+    tbody = document.querySelector("#table-professeurs tbody");
+    btnToggle = document.getElementById("btn-toggle-form");
+    formCard = document.getElementById("form-card");
+    searchInput = document.getElementById("search-profs");
+    modale = document.getElementById("modale-modifier");
+    if (modale) {
+        document.getElementById("mod-annuler").onclick = fermerModale;
+        modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+    }
+    if (formProfesseur) {
+        formProfesseur.addEventListener("submit", onFormProfesseurSubmit);
+    }
 
-searchInput.addEventListener("input", function () {
-    var terme = searchInput.value.toLowerCase();
-    var lignes = tbody.querySelectorAll("tr");
-    lignes.forEach(function (tr) {
-        tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
-    });
-});
+    // Add listeners
+    if (btnToggle) {
+        btnToggle.addEventListener("click", function () {
+            formCard.classList.toggle("hidden");
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            var terme = searchInput.value.toLowerCase();
+            var lignes = tbody.querySelectorAll("tr");
+            lignes.forEach(function (tr) {
+                tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
+            });
+        });
+    }
+}
 
 async function chargerProfesseurs() {
     var response = await fetch("/api/professeurs");
@@ -35,11 +57,13 @@ async function chargerProfesseurs() {
         tr.setAttribute("data-nom", p.nom);
         tr.setAttribute("data-prenom", p.prenom);
         tr.setAttribute("data-specialite", p.specialite);
+        tr.setAttribute("data-programme", p.programme || "");
         tr.innerHTML =
             "<td>" + p.matricule + "</td>" +
             "<td>" + p.nom + "</td>" +
             "<td>" + p.prenom + "</td>" +
             "<td>" + p.specialite + "</td>" +
+            "<td>" + (p.programme || "-") + "</td>" +
             '<td><div class="actions-cell">' +
                 '<button class="btn btn-vert" onclick="ouvrirModalDisponibilites(' + p.id + ', \'' + p.prenom + ' ' + p.nom + '\')">Disponibilités</button>' +
                 '<button class="btn btn-modifier" onclick="modifierProfesseur(' + p.id + ')">Modifier</button>' +
@@ -49,7 +73,7 @@ async function chargerProfesseurs() {
     });
 }
 
-formProfesseur.addEventListener("submit", async function (event) {
+async function onFormProfesseurSubmit(event) {
     event.preventDefault();
 
     var data = {
@@ -57,6 +81,7 @@ formProfesseur.addEventListener("submit", async function (event) {
         nom: document.getElementById("nom").value,
         prenom: document.getElementById("prenom").value,
         specialite: document.getElementById("specialite").value,
+        programme: document.getElementById("programme").value || null,
     };
 
     var response = await fetch("/api/professeurs", {
@@ -76,15 +101,12 @@ formProfesseur.addEventListener("submit", async function (event) {
         var err = await response.json();
         afficherMessage(msgProfesseur, err.error || "Erreur.", "erreur");
     }
-});
+}
 
 // Fermer la modale modifier
 function fermerModale() {
     modale.style.display = "none";
 }
-
-document.getElementById("mod-annuler").onclick = fermerModale;
-modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
 
 window.modifierProfesseur = function (id) {
     var tr = document.querySelector('tr[data-id="' + id + '"]');
@@ -94,6 +116,7 @@ window.modifierProfesseur = function (id) {
     document.getElementById("mod-nom").value = tr.getAttribute("data-nom") || "";
     document.getElementById("mod-prenom").value = tr.getAttribute("data-prenom") || "";
     document.getElementById("mod-specialite").value = tr.getAttribute("data-specialite") || "";
+    document.getElementById("mod-programme").value = tr.getAttribute("data-programme") || "";
 
     modale.style.display = "flex";
 
@@ -103,6 +126,7 @@ window.modifierProfesseur = function (id) {
             nom: document.getElementById("mod-nom").value,
             prenom: document.getElementById("mod-prenom").value,
             specialite: document.getElementById("mod-specialite").value,
+            programme: document.getElementById("mod-programme").value || null,
         };
         var response = await fetch("/api/professeurs/" + id, {
             method: "PUT",
@@ -217,17 +241,7 @@ window.sauvegarderDisponibilites = async function () {
                 return;
             }
 
-            var ancienne = dispoActuelleParJour[jour];
-            if (ancienne) {
-                if (debut < ancienne.debut || fin > ancienne.fin) {
-                    afficherMessage(
-                        msgDispo,
-                        "Impossible d'élargir la disponibilité de " + jour + " au-delà de " + ancienne.debut + "-" + ancienne.fin + ".",
-                        "erreur"
-                    );
-                    return;
-                }
-            }
+            // Removed restriction on expanding available time slots - permettre les modifications libres
         }
 
         // Supprimer toutes les disponibilités existantes
@@ -288,4 +302,8 @@ window.decocherTous = function () {
     document.querySelectorAll(".jour-actif").forEach(cb => { cb.checked = false; });
 };
 
-chargerProfesseurs();
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+    chargerProfesseurs();
+    activerTriTableau("table-professeurs");
+});

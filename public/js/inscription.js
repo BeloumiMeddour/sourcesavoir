@@ -1,11 +1,22 @@
 import { isEmailValid, isPasswordValid } from "./validation.js";
 
-const inputNom = document.getElementById("input-nom");
-const inputPrenom = document.getElementById("input-prenom");
-const inputCourriel = document.getElementById("input-courriel");
-const inputMotDePasse = document.getElementById("input-mot-de-passe");
-const formAuth = document.getElementById("form-auth");
-const erreurs = document.getElementById("erreurs");
+let inputNom;
+let inputPrenom;
+let inputCourriel;
+let inputMotDePasse;
+let formAuth;
+let erreurs;
+
+function initDOMElements() {
+    inputNom = document.getElementById("input-nom");
+    inputPrenom = document.getElementById("input-prenom");
+    inputCourriel = document.getElementById("input-courriel");
+    inputMotDePasse = document.getElementById("input-mot-de-passe");
+    formAuth = document.getElementById("form-auth");
+    erreurs = document.getElementById("erreurs");
+    
+    formAuth.addEventListener("submit", inscription);
+}
 
 async function inscription(event) {
     event.preventDefault();
@@ -65,8 +76,10 @@ async function inscription(event) {
         erreurs.style.color = "green";
         // window.location.replace("/connexion");
     } else if (response.status === 409) {
-        erreurs.innerText = "Un compte avec ce courriel existe déjà.";
+        erreurs.innerText = "Un compte avec ce courriel existe déjà .";
     }
 }
 
-formAuth.addEventListener("submit", inscription);
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+});

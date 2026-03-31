@@ -2,25 +2,54 @@
 
 import { afficherMessage } from './utils.js';
 
-const formCours = document.getElementById("form-cours");
-const msgCours = document.getElementById("msg-cours");
-const tbody = document.querySelector("#table-cours tbody");
-const btnToggle = document.getElementById("btn-toggle-form");
-const formCard = document.getElementById("form-card");
-const searchInput = document.getElementById("search-cours");
-const modale = document.getElementById("modale-modifier");
+let formCours;
+let msgCours;
+let tbody;
+let btnToggle;
+let formCard;
+let searchInput;
+let modale;
 
-btnToggle.addEventListener("click", function () {
-    formCard.classList.toggle("hidden");
-});
+function initDOMElements() {
+    formCours = document.getElementById("form-cours");
+    msgCours = document.getElementById("msg-cours");
+    tbody = document.querySelector("#table-cours tbody");
+    btnToggle = document.getElementById("btn-toggle-form");
+    formCard = document.getElementById("form-card");
+    searchInput = document.getElementById("search-cours");
+    modale = document.getElementById("modale-modifier");
+    if (modale) {
+        document.getElementById("mod-annuler").onclick = fermerModale;
+        modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+    }
 
-searchInput.addEventListener("input", function () {
-    var terme = searchInput.value.toLowerCase();
-    var lignes = tbody.querySelectorAll("tr");
-    lignes.forEach(function (tr) {
-        tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
-    });
-});
+    // Ajouter les event listeners
+    if (btnToggle) {
+        btnToggle.addEventListener("click", function () {
+            formCard.classList.toggle("hidden");
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            var terme = searchInput.value.toLowerCase();
+            var lignes = tbody.querySelectorAll("tr");
+            lignes.forEach(function (tr) {
+                tr.style.display = tr.textContent.toLowerCase().includes(terme) ? "" : "none";
+            });
+        });
+    }
+    
+    if (formCours) {
+        formCours.addEventListener("submit", onFormCoursSubmit);
+    }
+
+
+    if (modale) {
+        document.getElementById("mod-annuler").onclick = fermerModale;
+        modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
+    }
+}
 
 async function chargerCours() {
     var response = await fetch("/api/cours");
@@ -52,7 +81,7 @@ async function chargerCours() {
     });
 }
 
-formCours.addEventListener("submit", async function (event) {
+async function onFormCoursSubmit(event) {
     event.preventDefault();
 
     var data = {
@@ -81,15 +110,12 @@ formCours.addEventListener("submit", async function (event) {
         var err = await response.json();
         afficherMessage(msgCours, err.error || "Erreur.", "erreur");
     }
-});
+}
 
 // Fermer la modale
 function fermerModale() {
     modale.style.display = "none";
 }
-
-document.getElementById("mod-annuler").onclick = fermerModale;
-modale.addEventListener("click", function (e) { if (e.target === modale) fermerModale(); });
 
 window.modifierCours = function (id) {
     var tr = document.querySelector('tr[data-id="' + id + '"]');
@@ -143,4 +169,8 @@ window.supprimerCours = async function (id) {
     }
 };
 
-chargerCours();
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+    chargerCours();
+    activerTriTableau("table-cours");
+});

@@ -49,6 +49,7 @@ model Professeur {
   nom             String
   prenom          String
   specialite      String
+  programme       String?            // Programme d'enseignement (optionnel)
   chargeMax       Int                @default(30) // Charge horaire maximale par semaine
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt

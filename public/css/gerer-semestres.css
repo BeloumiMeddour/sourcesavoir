@@ -1,0 +1,135 @@
+/* ==============================================
+   PAGE GESTION SEMESTRES — EPlanify
+   Organisé par parties :
+     1. CARTES SEMESTRES
+     2. BADGES SEMESTRE
+     3. TABLEAU JOURS FÉRIÉS
+     4. FORMULAIRE JOUR FÉRIÉ
+     5. RESPONSIVE
+============================================== */
+
+/* ── 1. CARTES SEMESTRES ──────────────────── */
+
+.semestre-card {
+    background: var(--blanc);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--rouge-lacite);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--ombre);
+    transition: box-shadow 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.semestre-card:hover {
+    box-shadow: var(--ombre-hover);
+    border-left-color: var(--rouge-lacite-clair);
+}
+
+.semestre-card-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--rouge-lacite);
+}
+
+.semestre-card-dates {
+    font-size: 0.82rem;
+    color: var(--gris-texte);
+    margin-top: 2px;
+}
+
+/* ── 2. BADGES SEMESTRE ───────────────────── */
+
+.badge-semestre-actif {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--vert-clair);
+    color: var(--vert-fonce);
+    white-space: nowrap;
+}
+
+.badge-semestre-passe {
+    background: var(--gris-fond);
+    color: var(--gris-texte);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ── 3. TABLEAU JOURS FÉRIÉS ──────────────── */
+
+#table-jours-feries {
+    margin-top: 0.5rem;
+}
+
+#table-jours-feries td {
+    vertical-align: middle;
+}
+
+.ferie-date {
+    font-weight: 700;
+    color: var(--rouge-lacite);
+    white-space: nowrap;
+    font-size: 0.88rem;
+}
+
+.ferie-desc {
+    font-size: 0.85rem;
+    color: var(--gris-fonce);
+}
+
+/* ── 4. FORMULAIRE JOUR FÉRIÉ ─────────────── */
+
+#jourferie-form-container {
+    background: #fffbf0;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+#jourferie-form-container h2 {
+    color: #92400e;
+}
+
+#jourferie-form-container h2::before {
+    background: #f59e0b;
+}
+
+#ferie-semestre-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gris-texte);
+    margin: 1rem 0 0.5rem;
+}
+
+.btn-annuler {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+}
+
+.btn-annuler:hover {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+}
+
+/* ── 5. RESPONSIVE ────────────────────────── */
+
+@media (max-width: 600px) {
+    .semestre-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

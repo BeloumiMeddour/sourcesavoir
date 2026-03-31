@@ -8,25 +8,62 @@ var semestreActif = null;
 
 // --- Éléments du DOM ---
 
-var formSemestreCard = document.getElementById("form-semestre-card");
-var formSemestre = document.getElementById("form-semestre");
-var semestreId = document.getElementById("semestre-id");
-var nomSemestre = document.getElementById("nom-semestre");
-var dateDebut = document.getElementById("date-debut");
-var dateFin = document.getElementById("date-fin");
-var msgSemestre = document.getElementById("msg-semestre");
-var tableSemestres = document.getElementById("table-semestres").querySelector("tbody");
-var btnToggleSemestreForm = document.getElementById("btn-toggle-semestre-form");
-var btnCancelSemestre = document.getElementById("btn-cancel-semestre");
+var formSemestreCard;
+var formSemestre;
+var semestreId;
+var nomSemestre;
+var dateDebut;
+var dateFin;
+var msgSemestre;
+var tableSemestres;
+var btnToggleSemestreForm;
+var btnCancelSemestre;
 
-var jourfterieFormContainer = document.getElementById("jourferie-form-container");
-var formJourFerie = document.getElementById("form-jour-ferie");
-var semestreIdFerie = document.getElementById("semestre-id-ferie");
-var dateFerie = document.getElementById("date-ferie");
-var descriptionFerie = document.getElementById("description-ferie");
-var tableJoursFeeries = document.getElementById("table-jours-feries").querySelector("tbody");
-var btnCancelFerie = document.getElementById("btn-cancel-ferie");
-var ferieSemestreName = document.getElementById("ferie-semestre-name");
+var jourfterieFormContainer;
+var formJourFerie;
+var semestreIdFerie;
+var dateFerie;
+var descriptionFerie;
+var tableJoursFeeries;
+var btnCancelFerie;
+var ferieSemestreName;
+
+function initDOMElements() {
+    formSemestreCard = document.getElementById("form-semestre-card");
+    formSemestre = document.getElementById("form-semestre");
+    semestreId = document.getElementById("semestre-id");
+    nomSemestre = document.getElementById("nom-semestre");
+    dateDebut = document.getElementById("date-debut");
+    dateFin = document.getElementById("date-fin");
+    msgSemestre = document.getElementById("msg-semestre");
+    tableSemestres = document.getElementById("table-semestres").querySelector("tbody");
+    btnToggleSemestreForm = document.getElementById("btn-toggle-semestre-form");
+    btnCancelSemestre = document.getElementById("btn-cancel-semestre");
+
+    jourfterieFormContainer = document.getElementById("jourferie-form-container");
+    formJourFerie = document.getElementById("form-jour-ferie");
+    semestreIdFerie = document.getElementById("semestre-id-ferie");
+    dateFerie = document.getElementById("date-ferie");
+    descriptionFerie = document.getElementById("description-ferie");
+    tableJoursFeeries = document.getElementById("table-jours-feries").querySelector("tbody");
+    btnCancelFerie = document.getElementById("btn-cancel-ferie");
+    ferieSemestreName = document.getElementById("ferie-semestre-name");
+    
+    // Attach listeners
+    btnToggleSemestreForm.addEventListener("click", function() {
+        resetSemestreForm();
+        formSemestreCard.classList.remove("hidden");
+    });
+    
+    btnCancelSemestre.addEventListener("click", resetSemestreForm);
+    btnCancelFerie.addEventListener("click", function() {
+        jourfterieFormContainer.style.display = "none";
+        semestreActif = null;
+    });
+    
+    formSemestre.addEventListener("submit", sauvegarderSemestre);
+    formJourFerie.addEventListener("submit", sauvegarderJourFerie);
+}
 
 // --- Utilitaires ---
 
@@ -71,8 +108,8 @@ function afficherSemestres() {
                 </button>
             </td>
             <td>
-                <button class="btn btn-petit btn-bleu" data-action="edit" data-id="${sem.id}">Modifier</button>
-                <button class="btn btn-petit btn-rouge" data-action="delete" data-id="${sem.id}">Supprimer</button>
+                <button class="btn btn-modifier" data-action="edit" data-id="${sem.id}">Modifier</button>
+                <button class="btn btn-supprimer" data-action="delete" data-id="${sem.id}">Supprimer</button>
             </td>
         `;
         tableSemestres.appendChild(tr);
@@ -212,7 +249,7 @@ function afficherJoursFeeries() {
             <td>${formatDate(jf.date)}</td>
             <td>${jf.description}</td>
             <td>
-                <button class="btn btn-petit btn-rouge" data-action="delete-ferie" data-id="${jf.id}">Supprimer</button>
+                <button class="btn btn-supprimer" data-action="delete-ferie" data-id="${jf.id}">Supprimer</button>
             </td>
         `;
         tableJoursFeeries.appendChild(tr);
@@ -286,21 +323,10 @@ async function deleteJourFerie(id) {
     }
 }
 
-// --- Event listeners ---
-
-btnToggleSemestreForm.addEventListener("click", function() {
-    resetSemestreForm();
-    formSemestreCard.classList.remove("hidden");
-});
-
-btnCancelSemestre.addEventListener("click", resetSemestreForm);
-btnCancelFerie.addEventListener("click", function() {
-    jourfterieFormContainer.style.display = "none";
-    semestreActif = null;
-});
-
-formSemestre.addEventListener("submit", sauvegarderSemestre);
-formJourFerie.addEventListener("submit", sauvegarderJourFerie);
+// --- Event listeners are now attached in initDOMElements() ---
 
 // --- Démarrage ---
-chargerSemestres();
+document.addEventListener('DOMContentLoaded', function() {
+    initDOMElements();
+    chargerSemestres();
+});

@@ -347,17 +347,17 @@ main {
 
 .page-section {
     background-color: var(--blanc);
-    padding: 1.5rem 2rem;
+    padding: 1.2rem 2rem;
     border-radius: var(--radius);
     box-shadow: var(--ombre);
 }
 
 .page-section h1 {
     color: var(--rouge-lacite);
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    padding-bottom: 0.6rem;
-    margin-bottom: 1.25rem;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.8rem;
     border-bottom: 3px solid var(--rouge-lacite);
 }
 
@@ -415,9 +415,11 @@ main {
 }
 
 .btn-supprimer {
-    background-color: var(--rouge);
+    background-color: #fca5a5;
+    color: #7f1d1d;
     font-size: 0.8rem;
     padding: 0.3rem 0.65rem;
+    font-weight: 600;
 }
 
 .btn-assigner {

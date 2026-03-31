@@ -57,6 +57,11 @@ app.use(passport.session());
 
 // Définition du dossier des fichiers statiques
 app.use(express.static("public"));
+
+// Servir les librairies PDF depuis node_modules
+app.use("/node_modules/html2canvas", express.static("node_modules/html2canvas"));
+app.use("/node_modules/jspdf", express.static("node_modules/jspdf"));
+
 app.use(routeExterne);
 
 // Renvoyer une erreur 404 pour les routes non définies
