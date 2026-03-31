@@ -169,7 +169,7 @@ const affecterCoursAuSemestre = async (affectationData) => {
     const { id_cours, id_salle, jour, plageHoraire, id_semestre, id_professeur } = affectationData;
 
     // Valider les données obligatoires
-    if (!id_semestre || jour === undefined || jour === null) {
+    if (id_semestre === undefined || id_semestre === null || jour === undefined || jour === null) {
         throw new Error("Semestre et jour sont obligatoires");
     }
 
@@ -197,11 +197,32 @@ const affecterCoursAuSemestre = async (affectationData) => {
 
     // Vérifier si le professeur est déjà occupé (si fourni)
     if (id_professeur) {
-        const profOccupe = await verifierConflitProfesseur(id_professeur, dateActuelle, plageHoraire, null, id_semestre);
-        if (profOccupe) {
-            throw new Error("Conflit : ce professeur est déjà assigné à un cours à ce jour et cette plage horaire");
+        // 1. Vérifier que le créneau est dans les disponibilités du prof pour ce jour
+        const JOURS_NOMS = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+        const nomJour = JOURS_NOMS[parseInt(jour)];
+        if (nomJour) {
+            const dispos = await prisma.disponibilite.findMany({
+                where: { id_professeur, jour: nomJour },
+            });
+            if (dispos.length > 0) {
+                const hm = (str) => { const [h,m] = str.split(":").map(Number); return h*60+(m||0); };
+                const [debutSlot, finSlot] = plageHoraire.split("-").map(hm);
+                const dansUneDispo = dispos.some(d => {
+                    const [dDebut, dFin] = d.plageHoraire.split("-").map(hm);
+                    return debutSlot >= dDebut && finSlot <= dFin;
+                });
+                if (!dansUneDispo) {
+                    const plages = dispos.map(d => d.plageHoraire).join(", ");
+                    throw new Error(`Disponibilité : ce professeur n'est disponible le ${nomJour} que de ${plages}`);
+                }
+            }
         }
 
+        // 2. Vérifier qu'il n'a pas déjà un cours au même créneau ce semestre
+        const profOccupe = await verifierConflitProfesseur(id_professeur, dateActuelle, plageHoraire, null, id_semestre);
+        if (profOccupe) {
+            throw new Error("Conflit : ce professeur est déjà assigné à un cours à ce jour et cette plage horaire pour ce semestre");
+        }
     }
 
     // Créer UNE SEULE affectation "template"
@@ -333,19 +354,19 @@ const updateAffectation = async (id, data) => {
     const newProf = data.id_professeur !== undefined ? data.id_professeur : affectation.id_professeur;
     const newSemestre = data.id_semestre !== undefined ? data.id_semestre : affectation.id_semestre;
 
-    // Vérifier conflit salle (exclure l'affectation courante)
+    // Vérifier conflit salle (exclure l'affectation courante, même semestre seulement)
     if (newSalle && newDate) {
-        const salleOccupee = await verifierConflitSalle(newSalle, newDate, newPlage, id);
+        const salleOccupee = await verifierConflitSalle(newSalle, newDate, newPlage, id, newSemestre);
         if (salleOccupee) {
-            throw new Error("Conflit : cette salle est déjà occupée à cette date et plage horaire");
+            throw new Error("Conflit : cette salle est déjà occupée à cette date et plage horaire pour ce semestre");
         }
     }
 
-    // Vérifier conflit professeur (exclure l'affectation courante)
+    // Vérifier conflit professeur (exclure l'affectation courante, même semestre seulement)
     if (newProf && newDate) {
-        const profOccupe = await verifierConflitProfesseur(newProf, newDate, newPlage, id);
+        const profOccupe = await verifierConflitProfesseur(newProf, newDate, newPlage, id, newSemestre);
         if (profOccupe) {
-            throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire");
+            throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire pour ce semestre");
         }
     }
 

@@ -55,10 +55,6 @@ async function verifierConflitAvecAffectations(id_professeur, jour, plageHoraire
 const addDisponibilite = async (dispoData) => {
     const { jour, plageHoraire, id_professeur } = dispoData;
 
-    if (id_professeur) {
-        await verifierConflitAvecAffectations(id_professeur, jour, plageHoraire);
-    }
-
     const newDispo = await prisma.disponibilite.create({
         data: {
             jour,

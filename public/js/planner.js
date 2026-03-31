@@ -480,20 +480,35 @@ function genererOccurrencesAffectations(affectations) {
 }
 
 // --- Couleur unique par cours (basée sur le code) ---
+var PALETTE_COURS = [
+    "#2563eb", // bleu vif
+    "#7c3aed", // violet
+    "#db2777", // rose
+    "#ea580c", // orange
+    "#16a34a", // vert
+    "#0891b2", // cyan
+    "#b45309", // ambre foncé
+    "#be123c", // rouge foncé
+    "#4f46e5", // indigo
+    "#0d9488", // teal
+    "#9333ea", // violet clair
+    "#c2410c", // orange foncé
+];
+var couleurParCours = {}; // cache id_cours → couleur
+
 function getCouleurCours(cours) {
-    if (!cours) return "#94a3b8";
-    var palette = [
-        "#93c5fd", "#c4b5fd", "#fbcfe8", "#fed7aa",
-        "#a7f3d0", "#fca5a5", "#a5f3fc", "#fdba74",
-        "#c7d2fe", "#99f6e4", "#e9d5ff", "#d4fc79"
-    ];
-    var code = (cours.code || "") + (cours.programme || "");
-    var hash = 0;
-    for (var i = 0; i < code.length; i++) {
-        hash = ((hash << 5) - hash) + code.charCodeAt(i);
-        hash = hash & hash;
+    if (!cours) return "#64748b";
+    var id = cours.id || cours.code;
+    if (!couleurParCours[id]) {
+        var hash = 0;
+        var code = (cours.code || "") + (cours.programme || "");
+        for (var i = 0; i < code.length; i++) {
+            hash = ((hash << 5) - hash) + code.charCodeAt(i);
+            hash = hash & hash;
+        }
+        couleurParCours[id] = PALETTE_COURS[Math.abs(hash) % PALETTE_COURS.length];
     }
-    return palette[Math.abs(hash) % palette.length];
+    return couleurParCours[id];
 }
 
 // --- Dessiner la grille de la semaine ---
@@ -649,12 +664,12 @@ function dessinerGrille() {
                     ev.style.height = "calc(" + dureeHeures + " * var(--cell-height) - 4px)";
                     ev.style.zIndex = "10";
                     ev.style.overflow = "hidden";
+                    ev.style.color = "white";
 
                     var nomProf = a.professeur ? (a.professeur.prenom[0] + ". " + a.professeur.nom) : "";
                     var codeSalle = a.salle ? a.salle.code : "";
                     var codeCours = a.cours ? a.cours.code : "";
                     var nomCours = a.cours ? a.cours.nom : "";
-                    var jourSemaine = JOURS[j];
                     var horaire = a.plageHoraire;
 
                     // Tooltip au survol
@@ -663,13 +678,19 @@ function dessinerGrille() {
                         (a.professeur ? "Prof: " + a.professeur.prenom + " " + a.professeur.nom : "") + "\n" +
                         "Horaire: " + a.plageHoraire;
 
-                    ev.innerHTML =
-                        '<div class="ev-code">' + codeCours + '</div>' +
-                        (nomCours ? '<div class="ev-nom">' + nomCours + '</div>' : '') +
-                        '<div class="ev-salle">' + codeSalle + '</div>' +
-                        '<div class="ev-jour">' + jourSemaine + '</div>' +
-                        '<div class="ev-horaire">' + horaire + '</div>' +
-                        (nomProf ? '<div class="ev-prof">' + nomProf + '</div>' : '');
+                    // Contenu adaptatif selon la durée
+                    var html = '<div class="ev-code">' + codeCours + '</div>';
+                    if (dureeHeures >= 1.5) {
+                        html += '<div class="ev-horaire">' + horaire + '</div>';
+                        html += '<div class="ev-salle">' + codeSalle + '</div>';
+                    }
+                    if (dureeHeures >= 2) {
+                        if (nomCours) html += '<div class="ev-nom">' + nomCours + '</div>';
+                    }
+                    if (dureeHeures >= 2.5 && nomProf) {
+                        html += '<div class="ev-prof">' + nomProf + '</div>';
+                    }
+                    ev.innerHTML = html;
 
                     cell.style.overflow = "visible";
                     cell.style.zIndex = "5";

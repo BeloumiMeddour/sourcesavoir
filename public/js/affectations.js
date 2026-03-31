@@ -2,11 +2,6 @@
 
 import { afficherMessage, activerTriTableau } from './utils.js';
 
-function heureEnMinutes(h) {
-    var parts = h.split(":");
-    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-}
-
 // Convertit un jour (nombre "1", ou nom "Lundi") en indice backend (0=Dim, 1=Lun, ...)
 function normaliserJour(jour) {
     if (jour === null || jour === undefined) return null;
@@ -27,11 +22,13 @@ var selectJour;
 var selectHeureDebut;
 var selectHeureFin;
 var selectProgramme;
-var tousLesCours = []; // Cache de tous les cours
+var tousLesCours = [];        // Cache de tous les cours
+var tousLesProfesseurs = [];  // Cache de tous les professeurs
 
 // Cache des affectations
 var toutesAffectations = [];
-var filtreProfsTable = ""; // Filtre pour la table des affectations
+var filtresTable = { semestre: "", programme: "", prof: "", jour: "" };
+var filtresAppliques = false; // La liste ne s'affiche qu'après un premier filtre
 
 function initDOMElements() {
     formAffectation = document.getElementById("form-affectation");
@@ -64,13 +61,25 @@ function initDOMElements() {
         selectSalle.addEventListener("change", afficherDisponibiliteSalle);
     }
 
-    var searchProfInput = document.getElementById("search-prof-affectations");
-    if (searchProfInput) {
-        searchProfInput.addEventListener("input", function(e) {
-            filtreProfsTable = e.target.value.toLowerCase();
-            afficherAffectationsFiltrées();
-        });
-    }
+    var filtreSemestre = document.getElementById("filtre-semestre");
+    var filtreProgramme = document.getElementById("filtre-programme");
+    var filtreProf = document.getElementById("filtre-prof");
+    var filtreJour = document.getElementById("filtre-jour");
+    var btnReset = document.getElementById("btn-reset-filtres");
+
+    if (filtreSemestre) filtreSemestre.addEventListener("change", function() { filtresTable.semestre = this.value; filtresAppliques = true; afficherAffectationsFiltrées(); });
+    if (filtreProgramme) filtreProgramme.addEventListener("change", function() { filtresTable.programme = this.value; filtresAppliques = true; afficherAffectationsFiltrées(); });
+    if (filtreProf) filtreProf.addEventListener("change", function() { filtresTable.prof = this.value; filtresAppliques = true; afficherAffectationsFiltrées(); });
+    if (filtreJour) filtreJour.addEventListener("change", function() { filtresTable.jour = this.value; filtresAppliques = true; afficherAffectationsFiltrées(); });
+    if (btnReset) btnReset.addEventListener("click", function() {
+        filtresTable = { semestre: "", programme: "", prof: "", jour: "" };
+        filtresAppliques = false;
+        if (filtreSemestre) filtreSemestre.value = "";
+        if (filtreProgramme) filtreProgramme.value = "";
+        if (filtreProf) filtreProf.value = "";
+        if (filtreJour) filtreJour.value = "";
+        afficherAffectationsFiltrées();
+    });
 
     activerTriTableau("table-affectations");
 }
@@ -133,14 +142,8 @@ async function chargerSelectSemestres() {
 async function chargerSelectProfesseurs() {
     try {
         var response = await fetch("/api/professeurs");
-        var profs = await response.json();
-        selectProfesseur.innerHTML = '<option value="">-- Choisir un professeur --</option>';
-        profs.forEach(function (p) {
-            var option = document.createElement("option");
-            option.value = p.id;
-            option.textContent = p.prenom + " " + p.nom;
-            selectProfesseur.appendChild(option);
-        });
+        tousLesProfesseurs = await response.json();
+        filtrerProfsProgramme();
     } catch (error) {
         console.error("Erreur lors du chargement des professeurs:", error);
     }
@@ -162,56 +165,25 @@ async function chargerSelectSalles() {
 
 
 
-// --- Actualiser la liste des profs selon le créneau sélectionné ---
-async function actualiserListeProfs() {
-    var idSemestre = selectSemestre.value;
-    var jour = selectJour.value;
-    var debut = selectHeureDebut.value;
-    var fin = selectHeureFin.value;
+// --- Filtrer la liste des profs par programme du cours sélectionné ---
+function filtrerProfsProgramme() {
+    var coursId = selectCours.value;
+    var cours = tousLesCours.find(function(c) { return c.id == coursId; });
+    var programme = cours ? cours.programme : (selectProgramme ? selectProgramme.value : "");
 
-    // Si tout n'est pas encore sélectionné, garder la liste actuelle
-    if (!idSemestre || !jour || !debut || !fin) {
-        return;
-    }
+    var profsFiltres = programme
+        ? tousLesProfesseurs.filter(function(p) { return p.programme === programme; })
+        : tousLesProfesseurs;
 
-    try {
-        var response = await fetch(
-            "/api/professeurs/disponibilite-semestre?id_semestre=" + idSemestre +
-            "&jour=" + jour + "&debut=" + debut + "&fin=" + fin
-        );
-        if (!response.ok) {
-            selectProfesseur.innerHTML = '<option value="">-- Erreur de chargement --</option>';
-            return;
-        }
-        var profs = await response.json();
-
-        var dureeSlot = (heureEnMinutes(fin) - heureEnMinutes(debut)) / 60;
-        var disponibles = profs.filter(p => p.statut === "disponible" && p.heuresLibres > dureeSlot);
-        var presque     = profs.filter(p => p.statut === "disponible" && p.heuresLibres <= dureeSlot);
-
-        selectProfesseur.innerHTML = '<option value="">-- Choisir un professeur --</option>';
-
-        function ajouterGroupe(label, liste, disabled) {
-            if (liste.length === 0) return;
-            var grp = document.createElement("optgroup");
-            grp.label = label + " (" + liste.length + ")";
-            liste.forEach(function (p) {
-                var opt = document.createElement("option");
-                opt.value = p.id;
-                opt.disabled = disabled;
-                var heuresStr = disabled ? " (" + p.heuresLibres.toFixed(1) + "h)" : "";
-                opt.textContent = p.prenom + " " + p.nom + heuresStr;
-                grp.appendChild(opt);
-            });
-            selectProfesseur.appendChild(grp);
-        }
-
-        ajouterGroupe("✓ Disponibles", disponibles, false);
-        ajouterGroupe("⚠ Presque complets", presque, true);
-    } catch (error) {
-        console.error("Erreur actualiserListeProfs:", error);
-        selectProfesseur.innerHTML = '<option value="">-- Erreur de chargement --</option>';
-    }
+    var valeurActuelle = selectProfesseur.value;
+    selectProfesseur.innerHTML = '<option value="">-- Choisir un professeur --</option>';
+    profsFiltres.forEach(function(p) {
+        var opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.prenom + " " + p.nom;
+        if (p.id.toString() === valeurActuelle) opt.selected = true;
+        selectProfesseur.appendChild(opt);
+    });
 }
 
 // --- Afficher la disponibilité de la salle sélectionnée ---
@@ -249,7 +221,7 @@ async function afficherDisponibiliteSalle() {
         var course_map = {};
 
         // Initialiser la map des cours
-        for (var h = 8; h < 18; h++) {
+        for (var h = 8; h < 22; h++) {
             course_map[h] = {};
             for (var d = 0; d < 7; d++) {
                 course_map[h][d] = null;
@@ -269,7 +241,7 @@ async function afficherDisponibiliteSalle() {
                     var fin = parseInt(plage[1].split(":")[0]);
                     
                     for (var h = debut; h < fin; h++) {
-                        if (h >= 8 && h < 18) {
+                        if (h >= 8 && h < 22) {
                             if (!course_map[h][displayIdx]) {
                                 course_map[h][displayIdx] = {
                                     code: (a.cours && a.cours.code) ? a.cours.code : "???",
@@ -296,7 +268,7 @@ async function afficherDisponibiliteSalle() {
         });
 
         // Lignes horaires
-        for (var h = 8; h < 18; h++) {
+        for (var h = 8; h < 22; h++) {
             html += '<div class="mini-planner-cell mini-planner-hour">' + h + 'h</div>';
             
             for (var d = 0; d < 7; d++) {
@@ -409,7 +381,7 @@ async function afficherDisponibleProf(idProf) {
         });
 
         // Lignes horaires
-        for (var h = 8; h < 18; h++) {
+        for (var h = 8; h < 22; h++) {
             html += '<div class="mini-planner-cell mini-planner-hour">' + h + 'h</div>';
 
             for (var d = 0; d < 7; d++) {
@@ -439,12 +411,6 @@ async function afficherDisponibleProf(idProf) {
     }
 }
 
-// --- Panneau d'info sous le select prof (DEPRECATED) ---
-function afficherInfoProf() {
-    // Mantenu pour compatibilité, mais utilise les nouvelles jauges
-    afficherIndicateurProf();
-}
-
 // --- Convertir numéro jour (0-6) en nom ---
 function getNomJour(numJour) {
     var jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -463,23 +429,81 @@ async function chargerAffectations() {
     mapSemestresGlobal = {};
     semestres.forEach(s => { mapSemestresGlobal[s.id] = s.nom; });
 
-    // Afficher les affectations filtrées
+    peuplerFiltres(semestres);
     afficherAffectationsFiltrées();
 }
 
+// --- Peupler les selects de filtres avec les valeurs réelles ---
+function peuplerFiltres(semestres) {
+    var filtreSemestre = document.getElementById("filtre-semestre");
+    var filtreProgramme = document.getElementById("filtre-programme");
+    var filtreProf = document.getElementById("filtre-prof");
+
+    if (filtreSemestre) {
+        var valSem = filtreSemestre.value;
+        filtreSemestre.innerHTML = '<option value="">-- Tous --</option>';
+        semestres.forEach(function(s) {
+            var opt = document.createElement("option");
+            opt.value = s.id;
+            opt.textContent = s.nom;
+            filtreSemestre.appendChild(opt);
+        });
+        filtreSemestre.value = valSem;
+    }
+
+    if (filtreProgramme) {
+        var valProg = filtreProgramme.value;
+        var programmes = [...new Set(toutesAffectations.map(a => a.cours ? a.cours.programme : null).filter(Boolean))].sort();
+        filtreProgramme.innerHTML = '<option value="">-- Tous --</option>';
+        programmes.forEach(function(p) {
+            var opt = document.createElement("option");
+            opt.value = p;
+            opt.textContent = p;
+            filtreProgramme.appendChild(opt);
+        });
+        filtreProgramme.value = valProg;
+    }
+
+    if (filtreProf) {
+        var valProf = filtreProf.value;
+        var profsMap = {};
+        toutesAffectations.forEach(function(a) {
+            if (a.professeur) profsMap[a.id_professeur] = a.professeur.prenom + " " + a.professeur.nom;
+        });
+        filtreProf.innerHTML = '<option value="">-- Tous --</option>';
+        Object.entries(profsMap).sort((a,b) => a[1].localeCompare(b[1])).forEach(function([id, nom]) {
+            var opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = nom;
+            filtreProf.appendChild(opt);
+        });
+        filtreProf.value = valProf;
+    }
+}
 
 // --- Afficher les affectations filtrées ---
 function afficherAffectationsFiltrées() {
     tbody.innerHTML = "";
-    
-    var affichees = filtreProfsTable
-        ? toutesAffectations.filter(function(a) { 
-            if (!a.professeur) return false;
-            var nomComplet = (a.professeur.prenom + " " + a.professeur.nom).toLowerCase();
-            return nomComplet.includes(filtreProfsTable);
-        })
-        : toutesAffectations;
-    
+
+    var aucunFiltre = !filtresTable.semestre && !filtresTable.programme && !filtresTable.prof && !filtresTable.jour;
+    if (!filtresAppliques || aucunFiltre) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:1.5rem;">Sélectionnez au moins un filtre pour afficher les affectations.</td></tr>';
+        return;
+    }
+
+    var affichees = toutesAffectations.filter(function(a) {
+        if (filtresTable.semestre && String(a.id_semestre) !== String(filtresTable.semestre)) return false;
+        if (filtresTable.programme && (!a.cours || a.cours.programme !== filtresTable.programme)) return false;
+        if (filtresTable.prof && String(a.id_professeur) !== String(filtresTable.prof)) return false;
+        if (filtresTable.jour && String(a.jour) !== String(filtresTable.jour)) return false;
+        return true;
+    });
+
+    if (affichees.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:1.5rem;">Aucune affectation trouvée.</td></tr>';
+        return;
+    }
+
     affichees.forEach(function (a) { afficherLigneAffectation(a); });
 }
 
@@ -488,7 +512,8 @@ async function afficherLigneAffectation(a) {
 
     var dateJourStr = "";
     if (a.jour !== null && a.jour !== undefined && !a.date) {
-        dateJourStr = getNomJour(a.jour) + " (hebdo)";
+        var jourNum = normaliserJour(a.jour);
+        dateJourStr = (jourNum !== null ? getNomJour(jourNum) : a.jour) + " (hebdo)";
     } else if (a.date) {
         dateJourStr = new Date(a.date).toLocaleDateString("fr-CA");
     } else {
@@ -505,12 +530,6 @@ async function afficherLigneAffectation(a) {
     tr.setAttribute("data-date", a.date ? a.date.split("T")[0] : "");
     tr.setAttribute("data-plage", a.plageHoraire);
 
-    var chargeProf = 0;
-    var chargeMaxProf = null;
-    var chargeSalle = 0;
-    var chargeMaxSalle = 70;
-
-    // On ne charge plus les charges pour la table - juste afficher les noms
 
     var salleHtml = a.salle ? '<div>' + a.salle.code + '</div>' : '<div>—</div>';
 
@@ -580,7 +599,7 @@ async function onFormAffectationSubmit(event) {
     }
 
     var data = {
-        id_semestre: parseInt(selectSemestre.value) || null,
+        id_semestre: selectSemestre.value !== "" ? parseInt(selectSemestre.value) : null,
         id_cours: parseInt(selectCours.value),
         id_salle: parseInt(selectSalle.value),
         id_professeur: selectProfesseur.value ? parseInt(selectProfesseur.value) : null,
@@ -596,8 +615,15 @@ async function onFormAffectationSubmit(event) {
 
     if (response.ok) {
         afficherMessage(msgAffectation, "Cours affecté avec succès !", "succes");
+        var idSalleAvant = selectSalle.value;
+        var idProfAvant = selectProfesseur.value;
+        var idSemestreAvant = selectSemestre.value;
         formAffectation.reset();
+        selectSemestre.value = idSemestreAvant;
+        selectSalle.value = idSalleAvant;
         chargerAffectations();
+        if (idSalleAvant) afficherDisponibiliteSalle();
+        if (idProfAvant) afficherDisponibleProf(idProfAvant);
     } else {
         var err = await response.json();
         afficherMessage(msgAffectation, err.error || "Erreur lors de l'affectation.", "erreur");
@@ -785,17 +811,19 @@ document.addEventListener('DOMContentLoaded', function() {
     chargerAffectations();
 
     if (selectProgramme) {
-        selectProgramme.addEventListener("change", filtrerCoursProgramme);
+        selectProgramme.addEventListener("change", function() {
+            filtrerCoursProgramme();
+            filtrerProfsProgramme();
+        });
     }
 
-    // Réactualiser la liste des profs quand le créneau change
+    if (selectCours) {
+        selectCours.addEventListener("change", filtrerProfsProgramme);
+    }
+
     selectSemestre.addEventListener("change", function() {
-        actualiserListeProfs();
         afficherDisponibiliteSalle();
         afficherDisponibleProf(selectProfesseur.value);
     });
-    selectJour.addEventListener("change", actualiserListeProfs);
-    selectHeureDebut.addEventListener("change", actualiserListeProfs);
-    selectHeureFin.addEventListener("change", actualiserListeProfs);
 });
 

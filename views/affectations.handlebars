@@ -118,9 +118,41 @@
 
     <div class="affectations-header">
         <h2>Liste des affectations</h2>
-        <div class="search-prof-container">
-            <input type="text" id="search-prof-affectations" class="search-prof-input" placeholder="🔍 Chercher un professeur...">
+    </div>
+
+    <div class="table-filters">
+        <div class="filter-group">
+            <label>Semestre</label>
+            <select id="filtre-semestre" class="filter-select">
+                <option value="">-- Tous --</option>
+            </select>
         </div>
+        <div class="filter-group">
+            <label>Programme</label>
+            <select id="filtre-programme" class="filter-select">
+                <option value="">-- Tous --</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Professeur</label>
+            <select id="filtre-prof" class="filter-select">
+                <option value="">-- Tous --</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Jour</label>
+            <select id="filtre-jour" class="filter-select">
+                <option value="">-- Tous --</option>
+                <option value="1">Lundi</option>
+                <option value="2">Mardi</option>
+                <option value="3">Mercredi</option>
+                <option value="4">Jeudi</option>
+                <option value="5">Vendredi</option>
+                <option value="6">Samedi</option>
+                <option value="0">Dimanche</option>
+            </select>
+        </div>
+        <button id="btn-reset-filtres" class="btn-secondary">Réinitialiser</button>
     </div>
     
     <div class="table-container">

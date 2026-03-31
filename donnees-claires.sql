@@ -21,7 +21,7 @@ DELETE FROM Professeur;
 DELETE FROM Semestre;
 DELETE FROM [User];
 
--- Réinitialiser les compteurs d'identité
+-- Réinitialiser les compteurs d'identité pour que les IDs repartent à 1
 DBCC CHECKIDENT ('AffectationCours', RESEED, 0);
 DBCC CHECKIDENT ('JourFerie', RESEED, 0);
 DBCC CHECKIDENT ('Disponibilite', RESEED, 0);
@@ -205,7 +205,7 @@ INSERT INTO JourFerie (id_semestre, date, description, createdAt) VALUES
 -- Mot de passe : Admin123!  (hashé avec bcrypt)
 -- ============================================================
 INSERT INTO [User] (email, password, role, nom, prenom, createdAt) VALUES
-    ('admin@lacite.ca', '$2b$10$qp1OGnMXuBTgn46oXBHGeOJMvgciDsEKHTPMe.EHoti8oSX9HLskC', 'admin', 'Administrateur', 'Système', GETDATE());
+    ('admin@lacite.ca', '$2b$10$fTt7PsK5rg5VFGu/G4pITeRh0IufKJ2AXwIeK6QvpOgXBn9SmkczG', 'admin', 'Administrateur', 'Système', GETDATE());
 
 
 -- ============================================================

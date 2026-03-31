@@ -213,8 +213,8 @@
 }
 
 .mini-planner-slot.available {
-    background: #d1fae5;
-    border: 1px solid #10b981;
+    background: #4ade80;
+    border: 1px solid #16a34a;
 }
 
 .mini-planner-slot.occupied {
@@ -225,9 +225,9 @@
 }
 
 .mini-planner-slot.unavailable {
-    background: #e2e8f0;
-    border: 1px solid #cbd5e1;
-    color: #94a3b8;
+    background: #94a3b8;
+    border: 1px solid #64748b;
+    color: #475569;
 }
 
 /* ===========================
