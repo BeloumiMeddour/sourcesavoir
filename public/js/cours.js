@@ -1,6 +1,6 @@
 // === GESTION DES COURS ===
 
-import { afficherMessage } from './utils.js';
+import { afficherMessage, activerTriTableau } from './utils.js';
 
 let formCours;
 let msgCours;

@@ -714,8 +714,12 @@ function dessinerGrille() {
 
 // --- Préparer l'en-tête avant impression/PDF ---
 function preparerEnTete() {
-    var semaine = document.getElementById("label-semaine").textContent;
-    document.getElementById("print-semaine-label").textContent = semaine;
+    var labelSemaineEl = document.getElementById("label-semaine");
+    var printSemaine = document.getElementById("print-semaine-label");
+    var printFiltres = document.getElementById("print-filtres-label");
+    var printDate = document.getElementById("print-date");
+
+    if (printSemaine && labelSemaineEl) printSemaine.textContent = labelSemaineEl.textContent;
 
     var filtres = [];
     var prog = document.getElementById("filtre-programme");
@@ -723,15 +727,13 @@ function preparerEnTete() {
     var salle = document.getElementById("filtre-salle");
     var sem = document.getElementById("select-semestre");
 
-    if (sem && sem.options[sem.selectedIndex] && sem.value)
-        filtres.push(sem.options[sem.selectedIndex].text.split("(")[0].trim());
+    if (sem && sem.value && sem.selectedIndex >= 0) filtres.push(sem.options[sem.selectedIndex].text.split("(")[0].trim());
     if (prog && prog.value) filtres.push("Programme : " + prog.value);
-    if (prof && prof.value) filtres.push("Prof : " + prof.options[prof.selectedIndex].text);
-    if (salle && salle.value) filtres.push("Salle : " + salle.options[salle.selectedIndex].text);
+    if (prof && prof.value && prof.selectedIndex >= 0) filtres.push("Prof : " + prof.options[prof.selectedIndex].text);
+    if (salle && salle.value && salle.selectedIndex >= 0) filtres.push("Salle : " + salle.options[salle.selectedIndex].text);
 
-    document.getElementById("print-filtres-label").textContent = filtres.length ? filtres.join(" · ") : "";
-    document.getElementById("print-date").textContent =
-        "Imprimé le " + new Date().toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" });
+    if (printFiltres) printFiltres.textContent = filtres.length ? filtres.join(" · ") : "";
+    if (printDate) printDate.textContent = "Imprimé le " + new Date().toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" });
 }
 
 // --- Impression (uniquement la grille) ---
