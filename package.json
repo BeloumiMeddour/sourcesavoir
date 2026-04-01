@@ -31,6 +31,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.0",
         "@babel/preset-env": "^7.29.2",
+        "docx": "^9.6.1",
         "jest": "^30.3.0",
         "nodemon": "^3.1.10",
         "prisma": "^6.19.2",

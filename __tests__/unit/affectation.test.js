@@ -17,6 +17,9 @@ jest.mock('@prisma/client', () => {
         semestre: {
             findUnique: jest.fn(),
         },
+        disponibilite: {
+            findMany: jest.fn(),
+        },
     };
     return {
         PrismaClient: jest.fn(() => mockPrisma),
@@ -184,6 +187,7 @@ describe('Affectation Model', () => {
 
             mockPrisma.semestre.findUnique.mockResolvedValue(mockSemestre);
             mockPrisma.affectationCours.findMany.mockResolvedValue([]);
+            mockPrisma.disponibilite.findMany.mockResolvedValue([]);
 
             const mockAffectation = {
                 id: 1,
