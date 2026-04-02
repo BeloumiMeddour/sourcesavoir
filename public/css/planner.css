@@ -482,7 +482,7 @@
     top: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+    background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
     opacity: 0.35;
     z-index: 1;
     border-left: 2px solid #be185d;
@@ -530,7 +530,7 @@
 }
 
 .legende-dot--availability {
-    background: linear-gradient(135deg, #f472b6, #ec4899);
+    background: linear-gradient(135deg, #86efac, #4ade80);
 }
 
 /* ── 7. MESSAGE VIDE ───────────────────────── */
@@ -643,262 +643,141 @@
 /* ── 11. IMPRESSION ────────────────────────── */
 
 @media print {
-    /* Masquer tout par défaut */
-    body * {
-        visibility: hidden;
+    @page {
+        margin: 10mm;
+        size: A4 landscape;
     }
 
-    /* Afficher uniquement les éléments de la grille quand la classe print-planner-only est active */
-    body.print-planner-only .print-header,
-    body.print-planner-only .print-header *,
-    body.print-planner-only .planning-card,
-    body.print-planner-only .planning-card *,
-    body.print-planner-only .planner-section,
-    body.print-planner-only .planner-section *,
-    body.print-planner-only .planning-grid,
-    body.print-planner-only .planning-grid *,
-    body.print-planner-only .planning-header,
-    body.print-planner-only .planning-header *,
-    body.print-planner-only .planning-hour,
-    body.print-planner-only .planning-hour *,
-    body.print-planner-only .planning-cell,
-    body.print-planner-only .planning-cell *,
-    body.print-planner-only .planning-event,
-    body.print-planner-only .planning-event *,
-    body.print-planner-only .planning-legende,
-    body.print-planner-only .planning-legende * {
-        visibility: visible !important;
+    /* Cacher ce qu'on ne veut pas imprimer */
+    .sidebar,
+    .topbar,
+    .planner-top-bar,
+    .planner-filters-bar,
+    .planner-empty,
+    #message {
+        display: none !important;
     }
 
-    body.print-planner-only .print-header {
+    /* Réinitialiser le layout */
+    body,
+    .app-layout,
+    .app-main,
+    main {
         display: block !important;
-        position: static;
-        margin-bottom: 20px;
-        page-break-after: avoid;
-    }
-
-    body.print-planner-only .planning-card {
-        position: static;
-        margin: 0;
-        padding: 0;
-        border-radius: 0;
-        box-shadow: none;
-        background: white;
-        backdrop-filter: none;
-        overflow: visible;
-        page-break-inside: avoid;
-    }
-
-    body.print-planner-only .planning-grid {
-        min-width: unset;
-        width: 100%;
-        overflow: visible !important;
-        display: grid !important;
-        grid-template-columns: 50px repeat(7, 1fr) !important;
-    }
-
-    body.print-planner-only .planning-cell,
-    body.print-planner-only .planning-hour,
-    body.print-planner-only .planning-header {
-        overflow: visible !important;
-        visibility: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
         background: white !important;
-        border: 1px solid #ccc !important;
-        min-height: 50px;
-    }
-
-    body.print-planner-only .planning-event {
-        display: block !important;
-        overflow: visible !important;
-        visibility: visible !important;
-        position: relative !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        page-break-inside: avoid;
-    }
-
-    body.print-planner-only .availability-block {
-        visibility: visible !important;
-        display: block !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    body.print-planner-only .planning-legende {
-        margin-top: 20px;
-        page-break-before: avoid;
     }
 
     /* En-tête d'impression */
     .print-header {
-        background: #006838;
-        color: white;
-        padding: 16px;
+        display: block !important;
+        background: #006838 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color: white !important;
+        padding: 12px 16px;
         text-align: center;
-        font-family: 'Roboto', sans-serif;
-        page-break-after: avoid;
-        border-bottom: 2px solid #004d2a;
+        margin-bottom: 12px;
     }
 
     .print-header-logo {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 800;
-        letter-spacing: 2px;
-        color: white;
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
     }
 
     .print-header-info {
         display: block;
-        text-align: center;
-        font-size: 0.95rem;
-    }
-
-    .print-header-info strong {
-        font-size: 1rem;
-        font-weight: 700;
-        display: block;
-        margin-bottom: 4px;
-    }
-
-    .print-header-info span {
-        display: block;
-        opacity: 0.9;
-        font-size: 0.88rem;
-        margin-bottom: 4px;
+        font-size: 0.9rem;
     }
 
     .print-header-date {
-        font-size: 0.85rem;
         display: block;
-        margin-top: 8px;
+        font-size: 0.8rem;
         opacity: 0.9;
-    }
-
-    /* Contenu principal */
-    .planner-section {
-        background: white !important;
-        border: none !important;
-    }
-
-    /* Masquer les barres de contrôle */
-    .planner-top-bar,
-    .planner-filters-bar,
-    .btn,
-    .filter-group,
-    button {
-        visibility: hidden !important;
-        display: none !important;
-    }
-
-    /* Forcer l'affichage complet de la grille */
-    body.print-planner-only .planning-grid {
-        display: grid !important;
-        width: 100% !important;
-        overflow: visible !important;
-        grid-template-columns: 50px repeat(7, 1fr) !important;
-    }
-
-    body.print-planner-only .planning-header,
-    body.print-planner-only .planning-hour,
-    body.print-planner-only .planning-cell {
-        display: block !important;
-        visibility: visible !important;
-        overflow: visible !important;
-        border: 1px solid #ccc !important;
-        background: white !important;
-    }
-
-    body.print-planner-only .planning-event {
-        display: block !important;
-        visibility: visible !important;
-        overflow: visible !important;
-        position: relative !important;
-        margin: 2px !important;
-        box-shadow: 1px 1px 3px rgba(0,0,0,0.15) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        page-break-inside: avoid;
-    }
-
-    body.print-planner-only .planning-event.reservation {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    body.print-planner-only .planning-event.ferie {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    body.print-planner-only .planning-event.availability-block {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    body.print-planner-only .availability-block {
-        visibility: visible !important;
-        display: block !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    /* Supprimer les effets qui ne s'impriment pas bien */
-    .planning-event {
-        box-shadow: 1px 1px 2px rgba(0,0,0,0.1) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        page-break-inside: avoid;
-    }
-
-    .planning-cell {
-        page-break-inside: avoid;
-        border: 0.5px solid #ddd !important;
+        margin-top: 4px;
     }
 
     /* Grille */
+    .planning-card {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        background: white !important;
+        overflow: visible !important;
+        border-radius: 0 !important;
+    }
+
     .planning-grid {
-        border-collapse: collapse;
-        page-break-inside: avoid;
+        display: grid !important;
+        grid-template-columns: 50px repeat(7, 1fr) !important;
+        width: 100% !important;
+        overflow: visible !important;
+        min-width: unset !important;
+    }
+
+    .planning-header {
+        background: #006838 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color: white !important;
+        border: 1px solid #ccc !important;
+        overflow: visible !important;
+        font-size: 0.75rem;
+    }
+
+    .planning-hour {
+        border: 1px solid #ccc !important;
+        overflow: visible !important;
+        font-size: 0.7rem;
+        min-height: 40px;
+    }
+
+    .planning-cell {
+        border: 1px solid #ccc !important;
+        overflow: visible !important;
+        position: relative !important;
+        min-height: 40px;
+        height: var(--cell-height);
+    }
+
+    .planning-event {
+        position: absolute !important;
+        left: 1px !important;
+        right: 1px !important;
+        font-size: 0.65rem !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .availability-block {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        opacity: 0.5 !important;
     }
 
     /* Légende */
     .planning-legende {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #ddd;
-        display: flex;
-        gap: 20px;
+        display: flex !important;
+        gap: 16px;
         flex-wrap: wrap;
+        margin-top: 12px;
+        font-size: 0.8rem;
     }
 
     .legende-item {
-        display: flex;
+        display: flex !important;
         align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
+        gap: 6px;
     }
 
     .legende-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
-    }
-
-    /* Typography pour impression */
-    body {
-        color: #000 !important;
-        background: white !important;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-        page-break-after: avoid;
-    }
-
-    /* Marges et dimensions */
-    @page {
-        margin: 15mm;
-        size: A4;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 }
