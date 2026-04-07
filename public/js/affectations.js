@@ -111,6 +111,12 @@ async function chargerSelectProgrammes() {
     var cours = await response.json();
     var programmes = [...new Set(cours.map(c => c.programme).filter(Boolean))].sort();
 
+    // Ajouter aussi les programmes des professeurs
+    var responseProfesseurs = await fetch("/api/professeurs");
+    var professeurs = await responseProfesseurs.json();
+    var programmesProfesseurs = professeurs.map(p => p.programme).filter(Boolean);
+    programmes = [...new Set([...programmes, ...programmesProfesseurs])].sort();
+
     if (selectProgramme) {
         selectProgramme.innerHTML = '<option value="">-- Tous les programmes --</option>';
         programmes.forEach(function(p) {
