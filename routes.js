@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 import { createUser, getUsers, getUserById, updateUser, assignRole, deleteUser } from "./model/user.js";
 import {
@@ -9,6 +10,7 @@ import {
     getCoursByProgramme,
     getCoursByTypeSalle,
 } from "./model/cours.js";
+
 
 import { 
     addProfesseur, 
@@ -66,6 +68,20 @@ import {
 } from "./model/jourferie.js";
 
 const router = Router();
+
+// API: Liste des programmes uniques (cours + professeurs)
+router.get("/api/programmes", estAuthentifie, async (req, res) => {
+    try {
+        const cours = await getCours();
+        const professeurs = await getProfesseurs();
+        const programmesSet = new Set();
+        cours.forEach(c => { if (c.programme) programmesSet.add(c.programme); });
+        professeurs.forEach(p => { if (p.programme) programmesSet.add(p.programme); });
+        res.status(200).json(Array.from(programmesSet).sort());
+    } catch (error) {
+        res.status(500).json({ error: "Erreur: " + error.message });
+    }
+});
 
 // Importation du passport
 import passport from "passport";
