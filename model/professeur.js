@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
  * @returns le professeur ajouté
  */
 const addProfesseur = async (professeurData) => {
-    const { matricule, nom, prenom, specialite } = professeurData;
+    const { matricule, nom, prenom, specialite, programme } = professeurData;
     
     const newProfesseur = await prisma.professeur.create({
         data: {
@@ -18,6 +18,7 @@ const addProfesseur = async (professeurData) => {
             nom,
             prenom,
             specialite,
+            programme: programme || null,
         },
     });
     return newProfesseur;
