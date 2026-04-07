@@ -169,8 +169,27 @@ window.supprimerCours = async function (id) {
     }
 };
 
+async function chargerProgrammes() {
+    var select = document.getElementById("programme");
+    if (!select) return;
+    try {
+        var response = await fetch("/api/programmes");
+        var programmes = await response.json();
+        var current = select.value;
+        select.innerHTML = '<option value="">-- Sélectionner un programme --</option>';
+        programmes.forEach(function (p) {
+            var opt = document.createElement("option");
+            opt.value = p;
+            opt.textContent = p;
+            select.appendChild(opt);
+        });
+        if (current) select.value = current;
+    } catch (e) { }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initDOMElements();
     chargerCours();
+    chargerProgrammes();
     activerTriTableau("table-cours");
 });
