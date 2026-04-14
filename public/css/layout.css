@@ -5,11 +5,14 @@
 .app-layout {
     display: flex;
     min-height: 100vh;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 .app-main {
     flex: 1;
     margin-left: var(--sidebar-width);
+    max-width: 100%;
     margin-top: var(--topbar-height);
     display: flex;
     flex-direction: column;
@@ -19,6 +22,8 @@
 main {
     flex: 1;
     padding: 1.5rem;
+    min-width: 0;
+    overflow-x: hidden;
 }
 
 /* ===========================
@@ -262,23 +267,119 @@ main {
 }
 
 /* ===========================
+   HAMBURGER BUTTON
+=========================== */
+
+.hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.hamburger-btn:hover {
+    background: var(--gris-fond);
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 22px;
+    height: 2.5px;
+    background: var(--gris-fonce);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger-active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* ===========================
+   SIDEBAR OVERLAY (mobile)
+=========================== */
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 240;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay-visible {
+    display: block;
+    opacity: 1;
+}
+
+/* ===========================
    RESPONSIVE LAYOUT
 =========================== */
 
 @media (max-width: 768px) {
+    .hamburger-btn {
+        display: flex;
+    }
+
     .sidebar {
-        width: 180px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
     }
+
+    .sidebar.sidebar-open {
+        transform: translateX(0);
+    }
+
     .app-main {
-        margin-left: 180px;
+        margin-left: 0;
     }
+
     .topbar {
-        left: 180px;
+        left: 0;
+        padding: 0 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .topbar-right {
+        gap: 0.5rem;
+        overflow: hidden;
+    }
+
+    .topbar-email {
+        display: none;
+    }
+
+    #btn-deconnexion {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
     }
 
     .top-action-row {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .top-action-row h1 {
+        font-size: 1.1rem;
     }
 
     .top-action-row .right-actions {
@@ -292,6 +393,17 @@ main {
 
 @media (max-width: 480px) {
     main {
-        padding: 1rem 0.75rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .topbar-right {
+        gap: 0.3rem;
+    }
+
+    #btn-deconnexion {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+    }
+}
     }
 }

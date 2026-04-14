@@ -2,6 +2,13 @@
    VARIABLES
 =========================== */
 
+/* Breakpoints unifiés (référence) :
+   - Mobile  : max-width: 640px
+   - Tablette: max-width: 1024px
+   - Desktop : au-delà
+   - Sidebar collapse: max-width: 768px
+*/
+
 :root {
     --sidebar-width: 220px;
     --topbar-height: 50px;
@@ -39,12 +46,17 @@
     padding: 0;
 }
 
+html, body {
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--noir);
     background-color: var(--gris-fond);
     line-height: 1.6;
     min-height: 100vh;
+    width: 100%;
 }
 
 a {
