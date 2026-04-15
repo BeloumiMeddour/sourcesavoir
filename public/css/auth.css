@@ -16,7 +16,7 @@
     background-image: url('/assets/arrierePlan.jpg');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-attachment: scroll;
     margin: 0;
     padding: 0;
     z-index: 100;
