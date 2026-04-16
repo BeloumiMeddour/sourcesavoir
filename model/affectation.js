@@ -5,6 +5,17 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 /**
+ * Normalise une date pour éviter les décalages de fuseau horaire.
+ * Convertit "2026-04-03" en 2026-04-03T12:00:00Z (midi UTC)
+ */
+function normalizeDate(dateInput) {
+    if (!dateInput) return dateInput;
+    const str = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
+    const datePart = str.split('T')[0];
+    return new Date(datePart + 'T12:00:00Z');
+}
+
+/**
  * Convertit une chaîne "HH:MM" en minutes depuis minuit
  * @param {string} heure - ex: "08:30"
  * @returns {number} minutes depuis minuit
@@ -124,14 +135,14 @@ const affecterCoursASalle = async (affectationData) => {
     const { id_cours, id_salle, date, plageHoraire, id_semestre, id_professeur, session } = affectationData;
 
     // Vérifier si la salle est déjà occupée
-    const salleOccupee = await verifierConflitSalle(id_salle, new Date(date), plageHoraire, null, id_semestre || null);
+    const salleOccupee = await verifierConflitSalle(id_salle, normalizeDate(date), plageHoraire, null, id_semestre || null);
     if (salleOccupee) {
         throw new Error("Conflit : cette salle est déjà occupée à cette date et plage horaire");
     }
 
     // Vérifier si le professeur est déjà occupé (si fourni)
     if (id_professeur) {
-        const profOccupe = await verifierConflitProfesseur(id_professeur, new Date(date), plageHoraire, null, id_semestre || null);
+        const profOccupe = await verifierConflitProfesseur(id_professeur, normalizeDate(date), plageHoraire, null, id_semestre || null);
         if (profOccupe) {
             throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire");
         }
@@ -144,7 +155,7 @@ const affecterCoursASalle = async (affectationData) => {
             id_salle,
             id_professeur: id_professeur || null,
             id_semestre: id_semestre || null,
-            date: new Date(date),
+            date: normalizeDate(date),
             plageHoraire,
             session: session || "Non défini", // Gardé pour compatibilité
         },
@@ -345,7 +356,7 @@ const updateAffectation = async (id, data) => {
     }
 
     // Gérer le jour et la date
-    const newDate = data.date ? new Date(data.date) : affectation.date;
+    const newDate = data.date ? normalizeDate(data.date) : affectation.date;
     // Convertir jour en string si c'est un entier
     const newJour = data.jour !== undefined ? (typeof data.jour === 'number' ? data.jour.toString() : data.jour) : affectation.jour;
     

@@ -16,6 +16,26 @@ function initDOMElements() {
     erreurs = document.getElementById("erreurs");
     
     formAuth.addEventListener("submit", inscription);
+    initTogglePassword();
+}
+
+function initTogglePassword() {
+    var btn = document.querySelector(".toggle-password");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+        var input = document.getElementById("input-mot-de-passe");
+        var eyeOn = btn.querySelector(".eye-icon");
+        var eyeOff = btn.querySelector(".eye-off-icon");
+        if (input.type === "password") {
+            input.type = "text";
+            eyeOn.style.display = "none";
+            eyeOff.style.display = "block";
+        } else {
+            input.type = "password";
+            eyeOn.style.display = "block";
+            eyeOff.style.display = "none";
+        }
+    });
 }
 
 async function inscription(event) {
@@ -72,7 +92,7 @@ async function inscription(event) {
         inputCourriel.value = "";
         inputMotDePasse.value = "";
         erreurs.innerText =
-            "Inscription réussie ! Vous pouvez maintenant vous connecter.";
+            "Inscription réussie ! Votre compte est en attente de validation par un administrateur. Vous recevrez l'accès une fois validé.";
         erreurs.style.color = "green";
         // window.location.replace("/connexion");
     } else if (response.status === 409) {

@@ -5,6 +5,17 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 /**
+ * Normalise une date pour éviter les décalages de fuseau horaire.
+ * Convertit "2026-04-03" en 2026-04-03T12:00:00Z (midi UTC)
+ */
+function normalizeDate(dateInput) {
+    if (!dateInput) return dateInput;
+    const str = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
+    const datePart = str.split('T')[0];
+    return new Date(datePart + 'T12:00:00Z');
+}
+
+/**
  * Crée un nouveau semestre
  * @param {string} nom - ex: "Hiver 2026"
  * @param {Date} dateDebut
@@ -15,8 +26,8 @@ const addSemestre = async (nom, dateDebut, dateFin) => {
     const newSemestre = await prisma.semestre.create({
         data: {
             nom: nom,
-            dateDebut: new Date(dateDebut),
-            dateFin: new Date(dateFin),
+            dateDebut: normalizeDate(dateDebut),
+            dateFin: normalizeDate(dateFin),
         },
     });
     return newSemestre;
@@ -63,8 +74,8 @@ const updateSemestre = async (id, data) => {
         where: { id: id },
         data: {
             nom: data.nom || undefined,
-            dateDebut: data.dateDebut ? new Date(data.dateDebut) : undefined,
-            dateFin: data.dateFin ? new Date(data.dateFin) : undefined,
+            dateDebut: data.dateDebut ? normalizeDate(data.dateDebut) : undefined,
+            dateFin: data.dateFin ? normalizeDate(data.dateFin) : undefined,
         },
         include: {
             joursFeeries: true,

@@ -5,6 +5,17 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 /**
+ * Normalise une date pour éviter les décalages de fuseau horaire.
+ * Convertit "2026-04-03" en 2026-04-03T12:00:00Z (midi UTC)
+ */
+function normalizeDate(dateInput) {
+    if (!dateInput) return dateInput;
+    const str = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
+    const datePart = str.split('T')[0];
+    return new Date(datePart + 'T12:00:00Z');
+}
+
+/**
  * Ajoute un jour férié à un semestre
  * @param {number} id_semestre
  * @param {Date} date
@@ -14,7 +25,7 @@ const prisma = new PrismaClient();
 const addJourFerie = async (id_semestre, date, description) => {
     const newJourFerie = await prisma.jourFerie.create({
         data: {
-            date: new Date(date),
+            date: normalizeDate(date),
             description: description,
             id_semestre: id_semestre,
         },
@@ -55,7 +66,7 @@ const updateJourFerie = async (id, data) => {
     const updated = await prisma.jourFerie.update({
         where: { id: id },
         data: {
-            date: data.date ? new Date(data.date) : undefined,
+            date: data.date ? normalizeDate(data.date) : undefined,
             description: data.description || undefined,
         },
     });

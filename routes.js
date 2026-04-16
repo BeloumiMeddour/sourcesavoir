@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import { createUser, getUsers, getUserById, updateUser, assignRole, deleteUser } from "./model/user.js";
+import { createUser, getUsers, getUserById, updateUser, assignRole, deleteUser, validerUser } from "./model/user.js";
 import {
     addCours,
     getCours,
@@ -85,6 +85,7 @@ router.get("/api/programmes", estAuthentifie, async (req, res) => {
 
 // Importation du passport
 import passport from "passport";
+import { envoyerEmailValidation } from "./services/email.js";
 
 // Importation des middlewares d'authentification
 import { estAuthentifie, estAdmin } from "./middleware/auth.js";
@@ -393,6 +394,23 @@ router.delete("/api/utilisateurs/:id", estAdmin, async (req, res) => {
             res.status(404).json({ error: error.message });
         } else {
             res.status(500).json({ error: "Erreur lors de la suppression: " + error.message });
+        }
+    }
+});
+
+// Valider un compte utilisateur (admin)
+router.put("/api/utilisateurs/:id/valider", estAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const user = await validerUser(id);
+        // Envoyer un email de notification
+        await envoyerEmailValidation(user.email, user.prenom, user.nom);
+        res.status(200).json({ msg: "Compte validé avec succès", user });
+    } catch (error) {
+        if (error.message === "Utilisateur non trouvé") {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: error.message });
         }
     }
 });

@@ -21,12 +21,16 @@ const createUser = async (email, password, role = "user", nom = null, prenom = n
     //10 est le nombre de salage (salt rounds) pour bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Les comptes admin/responsable sont validés automatiquement
+    const etat = (role === "admin" || role === "responsable") ? "valide" : "en_attente";
+
     // Créer un nouvel utilisateur dans la base de données
     const newUser = await prisma.user.create({
         data: {
             email,
             password: hashedPassword,
             role,
+            etat,
             nom,
             prenom,
         },
@@ -57,6 +61,7 @@ const getUsers = async () => {
             id: true,
             email: true,
             role: true,
+            etat: true,
             nom: true,
             prenom: true,
             createdAt: true,
@@ -77,6 +82,7 @@ const getUserById = async (id) => {
             id: true,
             email: true,
             role: true,
+            etat: true,
             nom: true,
             prenom: true,
             createdAt: true,
@@ -169,4 +175,21 @@ const deleteUser = async (id) => {
     return true;
 };
 
-export { createUser, getUserByEmail, getUsers, getUserById, updateUser, assignRole, deleteUser };
+/**
+ * Valide un compte utilisateur (passe de en_attente à valide)
+ * @param {number} id
+ * @returns l'utilisateur mis à jour
+ */
+const validerUser = async (id) => {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new Error("Utilisateur non trouvé");
+    if (user.etat === "valide") throw new Error("Ce compte est déjà validé");
+
+    return await prisma.user.update({
+        where: { id },
+        data: { etat: "valide" },
+        select: { id: true, email: true, role: true, etat: true, nom: true, prenom: true, createdAt: true },
+    });
+};
+
+export { createUser, getUserByEmail, getUsers, getUserById, updateUser, assignRole, deleteUser, validerUser };

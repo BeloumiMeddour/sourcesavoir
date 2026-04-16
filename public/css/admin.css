@@ -2,6 +2,7 @@
    PAGE ADMIN — EPlanify
    Organisé par parties :
      1. BADGES RÔLE UTILISATEUR
+     1b. BADGES ÉTAT COMPTE
      2. TABLEAU UTILISATEURS
      3. RESPONSIVE
 ============================================== */
@@ -37,6 +38,37 @@
     background: var(--gris-fond);
     color: var(--gris-texte);
     border: 1px solid var(--gris-bordure);
+}
+
+/* ── 1b. BADGES ÉTAT COMPTE ────────────────── */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-valide {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-attente {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.btn-petit {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
 }
 
 /* ── 2. TABLEAU UTILISATEURS ──────────────── */
