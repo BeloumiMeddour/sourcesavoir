@@ -57,6 +57,13 @@ async function chargerCours() {
 
     tbody.innerHTML = "";
 
+    if (cours.length === 0) {
+        var emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = '<td colspan="7"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h3>Aucun cours</h3><p>Commencez par ajouter un cours avec le bouton ci-dessus.</p></div></td>';
+        tbody.appendChild(emptyRow);
+        return;
+    }
+
     cours.forEach(function (c) {
         var tr = document.createElement("tr");
         tr.setAttribute("data-id", c.id);

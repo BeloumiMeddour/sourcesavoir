@@ -51,6 +51,13 @@ async function chargerSalles() {
 
     tbody.innerHTML = "";
 
+    if (salles.length === 0) {
+        var emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = '<td colspan="4"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div><h3>Aucune salle</h3><p>Ajoutez une salle avec le bouton ci-dessus.</p></div></td>';
+        tbody.appendChild(emptyRow);
+        return;
+    }
+
     salles.forEach(function (s) {
         var tr = document.createElement("tr");
         tr.setAttribute("data-id", s.id);

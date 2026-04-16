@@ -170,6 +170,12 @@
     padding: 1.75rem 2rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--glass-shadow);
+    animation: pageEnter 0.4s ease-out;
+}
+
+@keyframes pageEnter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .page-section h1 {
@@ -180,6 +186,15 @@
     margin-bottom: 1.5rem;
     border-bottom: 3px solid var(--rouge-lacite);
     letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-section h1 svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
 }
 
 .page-section h2 {
@@ -821,4 +836,73 @@ form {
     .form-card {
         padding: 0.75rem;
     }
+}
+
+/* ===========================
+   TABLE ROW ANIMATIONS
+=========================== */
+
+@keyframes rowFadeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.table-container tbody tr {
+    animation: rowFadeIn 0.3s ease-out both;
+}
+
+.table-container tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.table-container tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.table-container tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.table-container tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.table-container tbody tr:nth-child(5) { animation-delay: 0.10s; }
+.table-container tbody tr:nth-child(6) { animation-delay: 0.12s; }
+.table-container tbody tr:nth-child(7) { animation-delay: 0.14s; }
+.table-container tbody tr:nth-child(8) { animation-delay: 0.16s; }
+.table-container tbody tr:nth-child(9) { animation-delay: 0.18s; }
+.table-container tbody tr:nth-child(10) { animation-delay: 0.20s; }
+
+/* ===========================
+   EMPTY STATE (tableau vide)
+=========================== */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    animation: pageEnter 0.5s ease-out;
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--rouge-lacite-ultra-clair);
+    color: var(--rouge-lacite);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.empty-state-icon svg {
+    width: 30px;
+    height: 30px;
+}
+
+.empty-state h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--noir);
+    margin-bottom: 0.4rem;
+}
+
+.empty-state p {
+    font-size: 0.88rem;
+    color: var(--gris-texte);
+    max-width: 320px;
+    line-height: 1.5;
 }
