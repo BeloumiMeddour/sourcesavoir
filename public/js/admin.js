@@ -56,6 +56,13 @@ async function chargerUtilisateurs() {
         const tr = document.createElement("tr");
         const dateCreation = new Date(u.createdAt).toLocaleDateString("fr-CA");
         const nomComplet = (u.prenom || "") + " " + (u.nom || "");
+        const etat = u.etat || "valide";
+        const etatBadge = etat === "valide"
+            ? '<span class="badge badge-valide">Validé</span>'
+            : '<span class="badge badge-attente">En attente</span>';
+        const btnValider = (etat === "en_attente")
+            ? '<button class="btn btn-vert btn-petit" onclick="validerCompte(' + u.id + ')">Valider</button>'
+            : '';
         tr.setAttribute("data-id", u.id);
         tr.setAttribute("data-email", u.email);
         tr.setAttribute("data-role", u.role);
@@ -65,8 +72,10 @@ async function chargerUtilisateurs() {
             "<td>" + nomComplet.trim() + "</td>" +
             "<td>" + u.email + "</td>" +
             "<td>" + u.role + "</td>" +
+            "<td>" + etatBadge + "</td>" +
             "<td>" + dateCreation + "</td>" +
             '<td><div class="actions-cell">' +
+                btnValider +
                 '<button class="btn btn-modifier" onclick="modifierRole(' + u.id + ')">Modifier</button>' +
                 '<button class="btn btn-supprimer" onclick="supprimerUtilisateur(' + u.id + ')">Supprimer</button>' +
             '</div></td>';
@@ -155,6 +164,23 @@ window.supprimerUtilisateur = async function (id) {
     } else {
         var err = await response.json();
         afficherMessage(msgAdmin, err.error || "Erreur.", "erreur");
+    }
+};
+
+// Valider un compte utilisateur
+window.validerCompte = async function (id) {
+    if (!confirm("Voulez-vous valider ce compte utilisateur ?")) return;
+
+    var response = await fetch("/api/utilisateurs/" + id + "/valider", {
+        method: "PUT",
+    });
+
+    if (response.ok) {
+        afficherMessage(msgAdmin, "Compte validé avec succès !", "succes");
+        chargerUtilisateurs();
+    } else {
+        var err = await response.json();
+        afficherMessage(msgAdmin, err.error || "Erreur lors de la validation.", "erreur");
     }
 };
 

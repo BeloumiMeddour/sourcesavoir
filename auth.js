@@ -43,6 +43,11 @@ passport.use(
                 return done(null, false, { error: "mauvais_mot_de_passe" });
             }
 
+            // Vérifier si le compte est validé par un admin
+            if (utilisateur.etat === "en_attente") {
+                return done(null, false, { error: "compte_en_attente" });
+            }
+
             // Si les mot de passe concorde, on retourne
             // l'information de l'utilisateur au serveur
             return done(null, utilisateur);

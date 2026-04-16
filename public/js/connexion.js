@@ -12,6 +12,26 @@ function initDOMElements() {
     erreurs = document.getElementById("erreurs");
     
     formAuth.addEventListener("submit", connexion);
+    initTogglePassword();
+}
+
+function initTogglePassword() {
+    var btn = document.querySelector(".toggle-password");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+        var input = document.getElementById("input-mot-de-passe");
+        var eyeOn = btn.querySelector(".eye-icon");
+        var eyeOff = btn.querySelector(".eye-off-icon");
+        if (input.type === "password") {
+            input.type = "text";
+            eyeOn.style.display = "none";
+            eyeOff.style.display = "block";
+        } else {
+            input.type = "password";
+            eyeOn.style.display = "block";
+            eyeOff.style.display = "none";
+        }
+    });
 }
 
 async function connexion(event) {
@@ -61,6 +81,8 @@ async function connexion(event) {
             erreurs.innerText = "Aucun compte ne correspond à ce courriel.";
         } else if (data.error === "mauvais_mot_de_passe") {
             erreurs.innerText = "Le mot de passe est incorrect.";
+        } else if (data.error === "compte_en_attente") {
+            erreurs.innerText = "Votre compte est en attente de validation par un administrateur.";
         }
     }
 }

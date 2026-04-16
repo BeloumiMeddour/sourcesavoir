@@ -521,7 +521,9 @@ async function afficherLigneAffectation(a) {
         var jourNum = normaliserJour(a.jour);
         dateJourStr = (jourNum !== null ? getNomJour(jourNum) : a.jour) + " (hebdo)";
     } else if (a.date) {
-        dateJourStr = new Date(a.date).toLocaleDateString("fr-CA");
+        var parts = String(a.date).split('T')[0].split('-');
+        var dateLocale = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        dateJourStr = dateLocale.toLocaleDateString("fr-CA");
     } else {
         dateJourStr = "—";
     }

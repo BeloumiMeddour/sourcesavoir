@@ -36,10 +36,20 @@ function initDOMElements() {
 
     var btnAujourdhui = document.getElementById("btn-aujourdhui");
     if (btnAujourdhui) btnAujourdhui.addEventListener("click", function () {
-        if (semestreActif && dateDebutSemestre) {
-            semaineCourante = getDebutSemaine(dateDebutSemestre);
+        var aujourdhui = new Date();
+        if (semestreActif && dateDebutSemestre && dateFinSemestre) {
+            if (aujourdhui >= dateDebutSemestre && aujourdhui <= dateFinSemestre) {
+                // Aujourd'hui est dans le semestre → y aller
+                semaineCourante = getDebutSemaine(aujourdhui);
+            } else if (aujourdhui < dateDebutSemestre) {
+                // Avant le semestre → aller au début
+                semaineCourante = getDebutSemaine(dateDebutSemestre);
+            } else {
+                // Après le semestre → aller à la fin
+                semaineCourante = getDebutSemaine(dateFinSemestre);
+            }
         } else {
-            semaineCourante = getDebutSemaine(new Date());
+            semaineCourante = getDebutSemaine(aujourdhui);
         }
         dessinerGrille();
     });
@@ -131,11 +141,18 @@ function ajouterJours(date, n) {
     return d;
 }
 
+// Parser une date provenant de l'API (UTC) en date locale sans décalage
+function parseAPIDate(dateStr) {
+    if (!dateStr) return null;
+    var parts = String(dateStr).split('T')[0].split('-');
+    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+}
+
 // Vérifier si une date est un jour férié
 function isJourFerie(date) {
     var dateStr = formatDate(date);
     return joursFeeries.some(function(jf) {
-        return formatDate(new Date(jf.date)) === dateStr;
+        return formatDate(parseAPIDate(jf.date)) === dateStr;
     });
 }
 
@@ -165,7 +182,7 @@ async function chargerSemestres() {
         semestres.forEach(function(s) {
             var opt = document.createElement("option");
             opt.value = s.id;
-            opt.textContent = s.nom + " (" + formatDateFR(new Date(s.dateDebut)) + " - " + formatDateFR(new Date(s.dateFin)) + ")";
+            opt.textContent = s.nom + " (" + formatDateFR(parseAPIDate(s.dateDebut)) + " - " + formatDateFR(parseAPIDate(s.dateFin)) + ")";
             selectSemestre.appendChild(opt);
         });
         
@@ -175,8 +192,8 @@ async function chargerSemestres() {
             if (semestreActif) {
                 var semestre = semestres.find(function(s) { return s.id === semestreActif; });
                 if (semestre) {
-                    dateDebutSemestre = new Date(semestre.dateDebut);
-                    dateFinSemestre = new Date(semestre.dateFin);
+                    dateDebutSemestre = parseAPIDate(semestre.dateDebut);
+                    dateFinSemestre = parseAPIDate(semestre.dateFin);
                     semaineCourante = getDebutSemaine(dateDebutSemestre);
                 }
                 chargerJoursFeeries(semestreActif);
@@ -447,13 +464,18 @@ function genererOccurrencesAffectations(affectations) {
 
     affectations.forEach(function(aff) {
         if (aff.date) {
-            // Affectation avec date spécifique - garder telle quelle
-            occurrences.push(aff);
+            // Affectation avec date spécifique - parser comme date locale
+            var affCopy = {};
+            for (var key in aff) {
+                affCopy[key] = aff[key];
+            }
+            affCopy.date = formatDate(parseAPIDate(aff.date));
+            occurrences.push(affCopy);
         } else if (aff.jour !== null && aff.jour !== undefined) {
             // Affectation par jour de la semaine - générer les occurrences
-            var dateDebut = new Date(semestre.dateDebut);
-            var dateFin = new Date(semestre.dateFin);
-            var jourTemplate = aff.jour;
+            var dateDebut = parseAPIDate(semestre.dateDebut);
+            var dateFin = parseAPIDate(semestre.dateFin);
+            var jourTemplate = parseInt(aff.jour);
 
             var dateActuelle = new Date(dateDebut);
             while (dateActuelle <= dateFin) {
@@ -467,7 +489,7 @@ function genererOccurrencesAffectations(affectations) {
                     for (var key in aff) {
                         affCopy[key] = aff[key];
                     }
-                    affCopy.date = dateOccurrence.toISOString();
+                    affCopy.date = formatDate(dateOccurrence);
                     occurrences.push(affCopy);
                 }
 
@@ -599,7 +621,7 @@ function dessinerGrille() {
                 if (h === HEURE_DEBUT) {
                     // Afficher le texte du jour férié uniquement à la première heure
                     var jourFerie = joursFeeries.find(function(jf) {
-                        return formatDate(new Date(jf.date)) === dateJourStr;
+                        return formatDate(parseAPIDate(jf.date)) === dateJourStr;
                     });
 
                     var nbHeures = HEURE_FIN - HEURE_DEBUT;
@@ -636,7 +658,7 @@ function dessinerGrille() {
                 // Chercher les affectations qui correspondent à ce jour et cette heure
                 affAvecOccurrences.forEach(function (a) {
                     if (!a.date) return;
-                    var dateAff = a.date.split("T")[0];
+                    var dateAff = String(a.date).split("T")[0];
                     if (dateAff !== dateJourStr) return; // Pas ce jour
 
                     // Extraire les heures de début et fin de la plage

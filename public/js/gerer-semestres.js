@@ -67,13 +67,20 @@ function initDOMElements() {
 
 // --- Utilitaires ---
 
+// Parser une date API (UTC) en date locale sans décalage
+function parseAPIDate(dateStr) {
+    if (!dateStr) return null;
+    var parts = String(dateStr).split('T')[0].split('-');
+    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+}
+
 function formatDate(dateStr) {
-    var date = new Date(dateStr);
+    var date = parseAPIDate(dateStr);
     return date.toLocaleDateString("fr-CA");
 }
 
 function formatDateInput(dateStr) {
-    return new Date(dateStr).toISOString().split("T")[0];
+    return String(dateStr).split("T")[0];
 }
 
 // --- Gestion des Semestres ---
