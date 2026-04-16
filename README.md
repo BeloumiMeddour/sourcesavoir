@@ -165,7 +165,9 @@ Ce projet est sous licence UNLICENSED - voir le fichier [LICENSE](LICENSE) pour 
 
 ## Auteur
 
-**Sedric Ouambo**
+**Alicia Terbouche**
+**Imen Bali**
+**Meddour Beloumi**
 
 ## Support
 
