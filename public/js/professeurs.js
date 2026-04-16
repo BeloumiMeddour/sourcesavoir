@@ -50,6 +50,13 @@ async function chargerProfesseurs() {
 
     tbody.innerHTML = "";
 
+    if (professeurs.length === 0) {
+        var emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = '<td colspan="6"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><h3>Aucun professeur</h3><p>Ajoutez un professeur avec le bouton ci-dessus.</p></div></td>';
+        tbody.appendChild(emptyRow);
+        return;
+    }
+
     professeurs.forEach(function (p) {
         var tr = document.createElement("tr");
         tr.setAttribute("data-id", p.id);
