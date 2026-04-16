@@ -1,6 +1,9 @@
 <!-- Top bar -->
 <div class="topbar">
     <div class="topbar-left">
+        <button class="hamburger-btn" id="btn-hamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
     </div>
     <div class="topbar-right">
         {{#if user_email}}
@@ -85,4 +88,37 @@
             link.classList.add('active');
         }
     });
+
+    // Sidebar toggle pour mobile
+    (function() {
+        var hamburger = document.getElementById('btn-hamburger');
+        var sidebar = document.querySelector('.sidebar');
+
+        // Créer l'overlay
+        var overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        document.body.appendChild(overlay);
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-open');
+            overlay.classList.toggle('sidebar-overlay-visible');
+            hamburger.classList.toggle('hamburger-active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('sidebar-open');
+            overlay.classList.remove('sidebar-overlay-visible');
+            hamburger.classList.remove('hamburger-active');
+        }
+
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        // Fermer au redimensionnement si on repasse en desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    })();
 </script>

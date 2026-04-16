@@ -135,6 +135,12 @@
 
 /* ── 5. RESPONSIVE ────────────────────────── */
 
+@media (max-width: 768px) {
+    .dispo-actions-bar {
+        flex-wrap: wrap;
+    }
+}
+
 @media (max-width: 600px) {
     #modale-disponibilites .modale-contenu {
         width: 95%;
@@ -144,5 +150,9 @@
     .dispo-time-input {
         width: 75px;
         font-size: 0.8rem;
+    }
+
+    .prof-charge-bar-wrap {
+        min-width: unset;
     }
 }

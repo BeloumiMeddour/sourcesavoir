@@ -112,4 +112,8 @@
         font-size: 0.68rem;
         padding: 0.18rem 0.45rem;
     }
+
+    .salle-charge-bar-wrap {
+        min-width: unset;
+    }
 }

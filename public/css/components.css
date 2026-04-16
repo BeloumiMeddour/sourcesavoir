@@ -379,16 +379,18 @@ tr:nth-child(even):hover td {
     padding: 1.5rem;
     margin-bottom: 1rem;
     box-shadow: 0 2px 12px rgba(59, 130, 246, 0.06);
+    overflow: hidden;
 }
 
 form {
-    max-width: 680px;
+    max-width: min(680px, 100%);
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    min-width: 0;
 }
 
 .form-group {
@@ -396,6 +398,7 @@ form {
     flex-direction: column;
     gap: 0.3rem;
     margin-bottom: 0.85rem;
+    min-width: 0;
 }
 
 .form-group label {
@@ -417,6 +420,9 @@ form {
     transition: var(--transition);
     font-family: inherit;
     color: var(--gris-fonce);
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -499,7 +505,7 @@ form {
     -webkit-backdrop-filter: blur(20px);
     border-radius: var(--radius-lg);
     padding: 2rem;
-    width: 460px;
+    width: min(460px, 92vw);
     max-width: 92%;
     box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.8) inset;
     border: 1px solid rgba(255, 255, 255, 0.7);
@@ -713,11 +719,58 @@ form {
     .form-row {
         grid-template-columns: 1fr;
     }
+
+    .modale-contenu {
+        padding: 1.5rem;
+    }
+
+    .modale-actions {
+        flex-direction: column;
+    }
+
+    .modale-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .actions-cell {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .actions-cell .btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-section {
+        padding: 1.25rem 1rem;
+    }
+
+    form {
+        max-width: 100%;
+    }
+
+    .form-card {
+        padding: 1rem;
+    }
+
+    .charge-container {
+        min-width: unset;
+    }
 }
 
 @media (max-width: 480px) {
     .page-section {
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 0.5rem;
+        border-radius: 0;
+    }
+
+    .page-section h1 {
+        font-size: 1.15rem;
     }
 
     .plage-horaire-row {
@@ -726,10 +779,46 @@ form {
     }
 
     table {
-        font-size: 0.78rem;
+        font-size: 0.72rem;
     }
 
     th, td {
-        padding: 0.4rem 0.5rem;
+        padding: 0.3rem 0.35rem;
+        font-size: 0.68rem;
+    }
+
+    th {
+        font-size: 0.62rem;
+        letter-spacing: 0.3px;
+    }
+
+    .btn {
+        font-size: 0.72rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    .btn-modifier,
+    .btn-supprimer,
+    .btn-assigner,
+    .btn-fermer {
+        font-size: 0.68rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .table-container {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .modale-contenu {
+        padding: 1.25rem;
+        border-radius: 12px;
+    }
+
+    .form-card {
+        padding: 0.75rem;
     }
 }
