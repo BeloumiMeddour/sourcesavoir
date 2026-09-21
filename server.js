@@ -7,6 +7,8 @@ import helmet from "helmet";
 import compression from "compression";
 import cors from "cors";
 import routeExterne from "./routes.js";
+import routeurScolaire, { gererErreurScolaire } from "./routes/scolaire.js";
+import { gardeRoutesHeritees } from "./middleware/permissions.js";
 import cspOptions from "./csp-options.js";
 import { engine } from "express-handlebars";
 
@@ -61,6 +63,11 @@ app.use(express.static("public"));
 // Servir les librairies PDF depuis node_modules
 app.use("/node_modules/html2canvas", express.static("node_modules/html2canvas"));
 app.use("/node_modules/jspdf", express.static("node_modules/jspdf"));
+
+// Garde des routes héritées : empêche les rôles enseignant, parent et élève
+// d'atteindre les routes qui n'exigent que l'authentification
+app.use(gardeRoutesHeritees);
+app.use("/api/scolaire", routeurScolaire, gererErreurScolaire);
 
 app.use(routeExterne);
 
