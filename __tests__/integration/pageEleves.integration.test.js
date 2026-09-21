@@ -79,7 +79,7 @@ describe("GET /eleves", () => {
     test.each([ROLES.ADMIN, ROLES.RESPONSABLE])("affiche la page à %s", async (role) => {
         const res = await page(role);
         expect(res.status).toBe(200);
-        expect(res.text).toContain("<title>Élèves | Planify</title>");
+        expect(res.text).toContain("<title>Élèves | ecoles3S</title>");
         expect(res.text).toContain("Gestion des Élèves");
         expect(res.text).toContain('id="form-eleve"');
         expect(res.text).toContain('id="table-eleves"');
@@ -157,7 +157,7 @@ describe("GET /structure (années, niveaux et groupes)", () => {
     test.each([ROLES.ADMIN, ROLES.RESPONSABLE])("affiche la page à %s, avec ses trois formulaires", async (role) => {
         const res = await page(role);
         expect(res.status).toBe(200);
-        expect(res.text).toContain("<title>Années et groupes | Planify</title>");
+        expect(res.text).toContain("<title>Années et groupes | ecoles3S</title>");
         for (const id of ["form-annee", "form-niveau", "form-groupe", "table-annees", "table-niveaux", "table-groupes"]) {
             expect(res.text).toContain(`id="${id}"`);
         }

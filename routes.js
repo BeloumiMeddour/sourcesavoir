@@ -197,7 +197,7 @@ router.post("/deconnexion", (request, response, next) => {
 // Page d'inscription
 router.get("/inscription", (request, response) => {
     response.render("auth", {
-        titre: "Inscription | Planify",
+        titre: "Inscription | ecoles3S",
         styles: ["./css/auth.css"],
         scripts: ["/js/inscription.js"],
         type: "Inscription",
@@ -210,7 +210,7 @@ router.get("/inscription", (request, response) => {
 // Page de connexion
 router.get("/connexion", (request, response) => {
     response.render("auth", {
-        titre: "Connexion | Planify",
+        titre: "Connexion | ecoles3S",
         styles: ["./css/auth.css"],
         scripts: ["/js/connexion.js"],
         type: "Connexion",
@@ -227,7 +227,7 @@ router.get("/connexion", (request, response) => {
 // Page d'accueil
 router.get("/", (req, res) => {
     res.render("accueil", {
-        titre: "Planify – Gestion des horaires",
+        titre: "ecoles3S – Gestion des horaires",
         styles: ["./css/accueil.css"],
         scripts: ["./js/accueil.js"],
         user_email: req.session.user_email || null,
@@ -264,7 +264,7 @@ router.get("/api/statistiques", async (req, res) => {
 // Page de contact
 router.get("/contact", (req, res) => {
     res.render("contact", {
-        titre: "Contact | Planify",
+        titre: "Contact | ecoles3S",
         styles: ["./css/contact.css"],
         scripts: ["./js/contact.js"],
         user_email: req.session.user_email || null,
@@ -275,7 +275,7 @@ router.get("/contact", (req, res) => {
 // Page des cours
 router.get("/cours", estAuthentifie, (req, res) => {
     res.render("cours", {
-        titre: "Cours | Planify",
+        titre: "Cours | ecoles3S",
         styles: ["./css/cours.css"],
         scripts: ["./js/cours.js"],
         user_email: req.session.user_email || null,
@@ -286,7 +286,7 @@ router.get("/cours", estAuthentifie, (req, res) => {
 // Page des professeurs
 router.get("/professeurs", estAuthentifie, (req, res) => {
     res.render("professeurs", {
-        titre: "Professeurs | Planify",
+        titre: "Professeurs | ecoles3S",
         styles: ["./css/professeurs.css"],
         scripts: ["./js/professeurs.js"],
         user_email: req.session.user_email || null,
@@ -297,7 +297,7 @@ router.get("/professeurs", estAuthentifie, (req, res) => {
 // Page des salles
 router.get("/salles", estAuthentifie, (req, res) => {
     res.render("salles", {
-        titre: "Salles | Planify",
+        titre: "Salles | ecoles3S",
         styles: ["./css/salles.css"],
         scripts: ["./js/salles.js"],
         user_email: req.session.user_email || null,
@@ -309,7 +309,7 @@ router.get("/salles", estAuthentifie, (req, res) => {
 // Les données passent par /api/scolaire, qui revérifie les droits.
 router.get("/eleves", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
     res.render("eleves", {
-        titre: "Élèves | Planify",
+        titre: "Élèves | ecoles3S",
         styles: [],
         scripts: ["./js/eleves.js"],
         user_email: req.user.email || null,
@@ -320,7 +320,7 @@ router.get("/eleves", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
 // Page des années, niveaux et groupes (socle scolaire) : réservée aux rôles de gestion.
 router.get("/structure", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
     res.render("structure", {
-        titre: "Années et groupes | Planify",
+        titre: "Années et groupes | ecoles3S",
         styles: [],
         scripts: ["./js/structure.js"],
         user_email: req.user.email || null,
@@ -331,7 +331,7 @@ router.get("/structure", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
 // Page des affectations
 router.get("/affectations", estAuthentifie, (req, res) => {
     res.render("affectations", {
-        titre: "Affectations | Planify",
+        titre: "Affectations | ecoles3S",
         styles: ["./css/affectations.css"],
         scripts: ["./js/affectations.js"],
         user_email: req.session.user_email || null,
@@ -342,7 +342,7 @@ router.get("/affectations", estAuthentifie, (req, res) => {
 // Page Planner (Emploi du Temps)
 router.get("/planner", estAuthentifie, (req, res) => {
     res.render("planner", {
-        titre: "Emploi du Temps | Planify",
+        titre: "Emploi du Temps | ecoles3S",
         styles: ["./css/planner.css"],
         scripts: ["./js/planner.js"],
         user_email: req.session.user_email || null,
@@ -353,7 +353,7 @@ router.get("/planner", estAuthentifie, (req, res) => {
 // Page admin
 router.get("/admin", estAdmin, (req, res) => {
     res.render("admin", {
-        titre: "Administration | Planify",
+        titre: "Administration | ecoles3S",
         styles: ["./css/admin.css"],
         scripts: ["./js/admin.js"],
         user_email: req.session.user_email || null,
@@ -364,7 +364,7 @@ router.get("/admin", estAdmin, (req, res) => {
 // Page gestion des semestres et jours fériés
 router.get("/gerer-semestres", estAuthentifie, (req, res) => {
     res.render("gerer-semestres", {
-        titre: "Gérer les Semestres | Planify",
+        titre: "Gérer les Semestres | ecoles3S",
         styles: ["./css/gerer-semestres.css"],
         scripts: ["./js/gerer-semestres.js"],
         user_email: req.session.user_email || null,

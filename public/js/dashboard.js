@@ -1,4 +1,4 @@
-// Dashboard Planify
+// Dashboard ecoles3S
 let chartTaux;
 
 const BRAND   = '#006838';

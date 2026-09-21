@@ -1,7 +1,7 @@
 {
-    "name": "planify",
+    "name": "ecoles3s",
     "version": "1.0.0",
-    "description": "Projet Planify",
+    "description": "Plateforme de gestion scolaire ecoles3S",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",

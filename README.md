@@ -1,6 +1,6 @@
-# Planify
+# ecoles3S
 
-Planify est une application web de planification et de gestion des cours pour les établissements d'enseignement. Elle permet de gérer les cours, les professeurs, les salles, les semestres et les affectations de manière efficace et automatisée.
+ecoles3S (anciennement Planify) est une application web de planification et de gestion des cours pour les établissements d'enseignement. Elle permet de gérer les cours, les professeurs, les salles, les semestres et les affectations de manière efficace et automatisée.
 
 ## Fonctionnalités
 
@@ -49,7 +49,7 @@ Planify est une application web de planification et de gestion des cours pour le
 
    Créer un fichier `.env` à la racine du projet :
    ```env
-   DATABASE_URL="sqlserver://username:password@localhost:1433;database=planify;trustServerCertificate=true"
+   DATABASE_URL="sqlserver://username:password@localhost:1433;database=ecoles3S;trustServerCertificate=true"
    SESSION_SECRET="votre-cle-secrete-pour-les-sessions"
    ```
 
