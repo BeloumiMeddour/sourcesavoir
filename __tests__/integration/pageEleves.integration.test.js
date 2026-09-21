@@ -137,3 +137,50 @@ describe("lien « Gestion des Élèves » dans le menu des autres pages", () => 
         expect(res.text).not.toMatch(lienEleves);
     });
 });
+
+describe("GET /structure (années, niveaux et groupes)", () => {
+    const app = creerApp();
+    const lienStructure = /href="\/structure"/g;
+    const page = (role, etat) => {
+        const req = request(app).get("/structure");
+        if (role) req.set("x-role", role);
+        if (etat) req.set("x-etat", etat);
+        return req;
+    };
+
+    test("redirige un visiteur non connecté vers la page de connexion", async () => {
+        const res = await page();
+        expect(res.status).toBe(302);
+        expect(res.headers.location).toBe("/connexion");
+    });
+
+    test.each([ROLES.ADMIN, ROLES.RESPONSABLE])("affiche la page à %s, avec ses trois formulaires", async (role) => {
+        const res = await page(role);
+        expect(res.status).toBe(200);
+        expect(res.text).toContain("<title>Années et groupes | Planify</title>");
+        for (const id of ["form-annee", "form-niveau", "form-groupe", "table-annees", "table-niveaux", "table-groupes"]) {
+            expect(res.text).toContain(`id="${id}"`);
+        }
+        expect(res.text).toContain('<script type="module" src="./js/structure.js"></script>');
+    });
+
+    test.each([ROLES.ADMIN, ROLES.RESPONSABLE])("le lien du menu apparaît une seule fois pour %s", async (role) => {
+        expect((await page(role)).text.match(lienStructure)).toHaveLength(1);
+    });
+
+    test.each([ROLES.USER, ROLES.ENSEIGNANT, ROLES.PARENT, ROLES.ELEVE, "pirate"])("refuse la page à %s (403)", async (role) => {
+        const res = await page(role);
+        expect(res.status).toBe(403);
+        expect(res.text).not.toContain("form-groupe");
+    });
+
+    test.each([ROLES.ADMIN, ROLES.RESPONSABLE])("refuse %s dont le compte n'est pas validé (403)", async (role) => {
+        expect((await page(role, "en_attente")).status).toBe(403);
+    });
+
+    test("le lien n'est pas proposé au rôle historique user", async () => {
+        const res = await request(app).get("/salles").set("x-role", ROLES.USER);
+        expect(res.status).toBe(200);
+        expect(res.text).not.toMatch(lienStructure);
+    });
+});

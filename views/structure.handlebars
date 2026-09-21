@@ -1,0 +1,118 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Années, niveaux et groupes</h1>
+    </div>
+
+    <h2>Années scolaires</h2>
+    <div class="form-card">
+        <form id="form-annee">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="annee-libelle">Libellé</label>
+                    <input type="text" id="annee-libelle" placeholder="Ex: 2026-2027" maxlength="20" required />
+                </div>
+                <div class="form-group">
+                    <label for="annee-debut">Date de début</label>
+                    <input type="date" id="annee-debut" required />
+                </div>
+                <div class="form-group">
+                    <label for="annee-fin">Date de fin</label>
+                    <input type="date" id="annee-fin" required />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter l'année</button>
+        </form>
+    </div>
+    <div id="msg-annee" class="message"></div>
+    <div class="table-container">
+        <table id="table-annees">
+            <thead>
+                <tr>
+                    <th>Libellé</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <h2>Niveaux</h2>
+    <div class="form-card">
+        <form id="form-niveau">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="niveau-code">Code</label>
+                    <input type="text" id="niveau-code" placeholder="Ex: 6E" maxlength="20" required />
+                </div>
+                <div class="form-group">
+                    <label for="niveau-libelle">Libellé</label>
+                    <input type="text" id="niveau-libelle" placeholder="Ex: 6e année" maxlength="100" required />
+                </div>
+                <div class="form-group">
+                    <label for="niveau-ordre">Ordre</label>
+                    <input type="number" id="niveau-ordre" placeholder="Ex: 6" min="0" required />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter le niveau</button>
+        </form>
+    </div>
+    <div id="msg-niveau" class="message"></div>
+    <div class="table-container">
+        <table id="table-niveaux">
+            <thead>
+                <tr>
+                    <th>Ordre</th>
+                    <th>Code</th>
+                    <th>Libellé</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <h2>Groupes</h2>
+    <div class="form-card">
+        <form id="form-groupe">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="groupe-code">Code</label>
+                    <input type="text" id="groupe-code" placeholder="Ex: 6A" maxlength="30" required />
+                </div>
+                <div class="form-group">
+                    <label for="groupe-annee">Année scolaire</label>
+                    <select id="groupe-annee" required>
+                        <option value="">-- Choisir --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="groupe-niveau">Niveau</label>
+                    <select id="groupe-niveau" required>
+                        <option value="">-- Choisir --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="groupe-capacite">Capacité (facultative)</label>
+                    <input type="number" id="groupe-capacite" placeholder="Ex: 25" min="1" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter le groupe</button>
+        </form>
+    </div>
+    <div id="msg-groupe" class="message"></div>
+    <div class="table-container">
+        <table id="table-groupes">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Année</th>
+                    <th>Niveau</th>
+                    <th>Capacité</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>

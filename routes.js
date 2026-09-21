@@ -317,6 +317,17 @@ router.get("/eleves", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
     });
 });
 
+// Page des années, niveaux et groupes (socle scolaire) : réservée aux rôles de gestion.
+router.get("/structure", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
+    res.render("structure", {
+        titre: "Années et groupes | Planify",
+        styles: [],
+        scripts: ["./js/structure.js"],
+        user_email: req.user.email || null,
+        is_admin: req.user.role === ROLES.ADMIN,
+    });
+});
+
 // Page des affectations
 router.get("/affectations", estAuthentifie, (req, res) => {
     res.render("affectations", {

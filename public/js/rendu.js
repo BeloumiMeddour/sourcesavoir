@@ -203,16 +203,19 @@ export function htmlLigneJourFerie(jf, dateTexte) {
 }
 
 /**
- * Date de naissance affichée (AAAA-MM-JJ) : les dix premiers caractères d'une date ISO
+ * Date affichée (AAAA-MM-JJ) : les dix premiers caractères d'une date ISO
  * renvoyée par l'API (« 2014-04-12T00:00:00.000Z »). Toute autre valeur donne "".
  * @param {*} valeur - chaîne ISO, null ou undefined
  * @returns {string}
  */
-export function dateNaissanceAffichee(valeur) {
+export function dateAffichee(valeur) {
     if (typeof valeur !== "string") return "";
     const debut = valeur.slice(0, 10);
     return /^\d{4}-\d{2}-\d{2}$/.test(debut) ? debut : "";
 }
+
+/** Date de naissance affichée : voir dateAffichee. */
+export const dateNaissanceAffichee = dateAffichee;
 
 /**
  * Cellules d'une ligne du tableau des élèves.
@@ -229,13 +232,80 @@ export function htmlLigneEleve(eleve) {
 }
 
 /**
+ * Cellule affichée quand un tableau est vide.
+ * @param {number} nombreColonnes - nombre de colonnes du tableau
+ * @param {string} titre - ex. « Aucune année »
+ * @param {string} message - consigne affichée sous le titre
+ * @returns {string} HTML d'une cellule <td>
+ */
+export function htmlLigneVide(nombreColonnes, titre, message) {
+    return '<td colspan="' + echapperHtml(nombreColonnes) + '"><div class="empty-state">' +
+        '<div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>' +
+        '<circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg></div>' +
+        "<h3>" + echapperHtml(titre) + "</h3><p>" + echapperHtml(message) + "</p></div></td>";
+}
+
+/**
  * Cellule affichée quand le tableau des élèves est vide.
  * @param {number} nombreColonnes - nombre de colonnes du tableau
  * @returns {string} HTML d'une cellule <td>
  */
 export function htmlLigneVideEleves(nombreColonnes) {
-    return '<td colspan="' + echapperHtml(nombreColonnes) + '"><div class="empty-state">' +
-        '<div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>' +
-        "<h3>Aucun élève</h3><p>Ajoutez un élève avec le bouton ci-dessus.</p></div></td>";
+    return htmlLigneVide(nombreColonnes, "Aucun élève", "Ajoutez un élève avec le bouton ci-dessus.");
+}
+
+/**
+ * Cellules d'une ligne du tableau des années scolaires.
+ * @param {Object} annee - { id, libelle, dateDebut, dateFin }
+ * @returns {string} HTML des cellules <td>
+ */
+export function htmlLigneAnnee(annee) {
+    return `
+            <td>${echapperHtml(annee.libelle)}</td>
+            <td>${echapperHtml(dateAffichee(annee.dateDebut))}</td>
+            <td>${echapperHtml(dateAffichee(annee.dateFin))}</td>
+        `;
+}
+
+/**
+ * Cellules d'une ligne du tableau des niveaux.
+ * @param {Object} niveau - { id, code, libelle, ordre }
+ * @returns {string} HTML des cellules <td>
+ */
+export function htmlLigneNiveau(niveau) {
+    return `
+            <td>${echapperHtml(niveau.ordre)}</td>
+            <td>${echapperHtml(niveau.code)}</td>
+            <td>${echapperHtml(niveau.libelle)}</td>
+        `;
+}
+
+/**
+ * Cellules d'une ligne du tableau des groupes. L'année et le niveau viennent
+ * de la sélection de l'API ({ annee: { libelle }, niveau: { code } }).
+ * @param {Object} groupe - { id, code, capacite, annee, niveau }
+ * @returns {string} HTML des cellules <td>
+ */
+export function htmlLigneGroupe(groupe) {
+    const capacite = groupe.capacite === null || groupe.capacite === undefined ? "—" : groupe.capacite;
+    return `
+            <td>${echapperHtml(groupe.code)}</td>
+            <td>${echapperHtml(groupe.annee?.libelle)}</td>
+            <td>${echapperHtml(groupe.niveau?.code)}</td>
+            <td>${echapperHtml(capacite)}</td>
+        `;
+}
+
+/**
+ * Options d'une liste déroulante : la valeur est l'identifiant, le texte est
+ * choisi par l'appelant. Le choix « -- Choisir -- » est ajouté par la page.
+ * @param {Array<Object>} elements - éléments de l'API, chacun avec un id
+ * @param {(element: Object) => string} libelle - texte affiché pour un élément
+ * @returns {string} HTML des balises <option>
+ */
+export function htmlOptionsSelect(elements, libelle) {
+    return elements
+        .map((element) => '<option value="' + echapperHtml(element.id) + '">' + echapperHtml(libelle(element)) + "</option>")
+        .join("");
 }

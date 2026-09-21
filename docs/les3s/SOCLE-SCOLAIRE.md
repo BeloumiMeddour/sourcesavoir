@@ -109,9 +109,20 @@ qu'un confort d'affichage (`exposerDroitsVues`) : la route de la page et l'API
 vérifient chacune les droits. Les données de l'API sont échappées avant d'entrer
 dans le HTML (`public/js/rendu.js`).
 
-Ce que la page ne fait pas encore : modifier ou supprimer un élève (l'API n'offre
-que la lecture et la création), gérer années, niveaux, groupes, inscriptions et
-liens familiaux, et les vues enseignant, parent et élève.
+La page `/structure` (menu « Années et Groupes »), mêmes rôles et mêmes règles,
+liste et crée les années scolaires, les niveaux et les groupes (un groupe choisit
+une année et un niveau existants) via `GET` et `POST` sur `/api/scolaire/annees`,
+`/niveaux` et `/groupes`.
+
+Ce que ces pages ne font pas encore : modifier ou supprimer (l'API n'offre que la
+lecture et la création), gérer les inscriptions et les liens familiaux, et les
+vues enseignant, parent et élève.
+
+Base réelle : ces pages lisent les tables du socle. Tant que les migrations M0 à M3
+ne sont pas appliquées à la base réelle, les pages s'ouvrent mais les appels de
+l'API répondent `500` (code Prisma `P2021`, table absente). Ce constat a été fait
+le 21 septembre 2026 sur la base réelle, en lecture seule. L'application des
+migrations suit `procedure-prisma.md`.
 
 ## Historique et intégrité
 
