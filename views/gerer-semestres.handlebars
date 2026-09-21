@@ -1,0 +1,93 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Gérer les Semestres et Jours Fériés</h1>
+        <div class="right-actions">
+            <button class="btn btn-vert" id="btn-toggle-semestre-form">+ Créer un Semestre</button>
+        </div>
+    </div>
+
+    <!-- Formulaire pour créer/modifier un semestre -->
+    <div class="form-card hidden" id="form-semestre-card">
+        <h2 id="form-semestre-title">Créer un Semestre</h2>
+        <form id="form-semestre">
+            <input type="hidden" id="semestre-id" />
+            
+            <div class="form-group">
+                <label for="nom-semestre">Nom du semestre</label>
+                <input type="text" id="nom-semestre" placeholder="Ex: Hiver 2026" required />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date-debut">Date de début</label>
+                    <input type="date" id="date-debut" required />
+                </div>
+                <div class="form-group">
+                    <label for="date-fin">Date de fin</label>
+                    <input type="date" id="date-fin" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <button type="submit" class="btn btn-ajouter">Enregistrer</button>
+                <button type="button" class="btn btn-annuler" id="btn-cancel-semestre">Annuler</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="msg-semestre" class="message"></div>
+
+    <!-- Liste des semestres -->
+    <h2>Semestres existants</h2>
+    <div class="table-container">
+        <table id="table-semestres">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Date de début</th>
+                    <th>Date de fin</th>
+                    <th>Jours fériés</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Formulaire pour ajouter un jour férié -->
+    <div id="jourferie-form-container" style="display: none; margin-top: 30px;">
+        <h2>Ajouter un Jour Férié</h2>
+        <form id="form-jour-ferie">
+            <input type="hidden" id="semestre-id-ferie" />
+            
+            <div class="form-group">
+                <label for="date-ferie">Date</label>
+                <input type="date" id="date-ferie" required />
+            </div>
+
+            <div class="form-group">
+                <label for="description-ferie">Description</label>
+                <input type="text" id="description-ferie" placeholder="Ex: Noël, Congé de printemps" required />
+            </div>
+
+            <div class="form-row">
+                <button type="submit" class="btn btn-ajouter">Ajouter</button>
+                <button type="button" class="btn btn-annuler" id="btn-cancel-ferie">Annuler</button>
+            </div>
+        </form>
+
+        <h3 id="ferie-semestre-name"></h3>
+        <div class="table-container">
+            <table id="table-jours-feries">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</section>

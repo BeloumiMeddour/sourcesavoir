@@ -1,0 +1,115 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Gestion des Cours</h1>
+        <div class="right-actions">
+            <input type="text" class="search-input" id="search-cours" placeholder="Rechercher..." />
+            <button class="btn btn-vert" id="btn-toggle-form">+ Ajouter un Cours</button>
+        </div>
+    </div>
+
+    <div class="form-card hidden" id="form-card">
+        <form id="form-cours">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="code">Code</label>
+                    <input type="text" id="code" placeholder="Ex: INF1007" required />
+                </div>
+                <div class="form-group">
+                    <label for="nom">Nom du cours</label>
+                    <input type="text" id="nom" placeholder="Ex: Programmation Web" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="duree">Durée (heures)</label>
+                    <input type="number" id="duree" placeholder="Ex: 45" required />
+                </div>
+                <div class="form-group">
+                    <label for="programme">Programme</label>
+                    <select id="programme" name="programme" required>
+                        <option value="">-- Sélectionner un programme --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="etapeEtude">Étape d'étude</label>
+                    <select id="etapeEtude" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="1">Étape 1</option>
+                        <option value="2">Étape 2</option>
+                        <option value="3">Étape 3</option>
+                        <option value="4">Étape 4</option>
+                        <option value="5">Étape 5</option>
+                        <option value="6">Étape 6</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="typeSalle">Type de salle</label>
+                    <select id="typeSalle" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="Classe">Classe</option>
+                        <option value="Labo">Labo</option>
+                        <option value="Amphi">Amphi</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter le cours</button>
+        </form>
+    </div>
+
+    <div id="msg-cours" class="message"></div>
+
+
+    <div class="table-container">
+        <table id="table-cours">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Durée</th>
+                    <th>Programme</th>
+                    <th>Étape</th>
+                    <th>Type salle</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Modale modification cours -->
+<div id="modale-modifier" class="modale-overlay" style="display:none;">
+    <div class="modale-contenu">
+        <h3>Modifier le cours</h3>
+        <div class="modale-champ">
+            <label>Code</label>
+            <input type="text" id="mod-code" />
+        </div>
+        <div class="modale-champ">
+            <label>Nom</label>
+            <input type="text" id="mod-nom" />
+        </div>
+        <div class="modale-champ">
+            <label>Durée (heures)</label>
+            <input type="number" id="mod-duree" />
+        </div>
+        <div class="modale-champ">
+            <label>Programme</label>
+            <input type="text" id="mod-programme" />
+        </div>
+        <div class="modale-champ">
+            <label>Étape (1-6)</label>
+            <input type="text" id="mod-etape" />
+        </div>
+        <div class="modale-champ">
+            <label>Type de salle</label>
+            <input type="text" id="mod-typesalle" />
+        </div>
+        <div class="modale-actions">
+            <button class="btn btn-modifier" id="mod-valider">Valider</button>
+            <button class="btn btn-supprimer" id="mod-annuler">Annuler</button>
+        </div>
+    </div>
+</div>

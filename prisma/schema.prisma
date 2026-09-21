@@ -1,0 +1,264 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  etat      String   @default("en_attente")
+  nom       String?  
+  prenom    String?  
+  createdAt DateTime @default(now())
+
+  // Back-relations du socle scolaire (0..1 profil par utilisateur ; l'unicité vient des index filtrés de la migration socle_index_filtres)
+  professeurs Professeur[]
+  eleves      Eleve[]
+  tuteurs     Tuteur[]
+}
+
+// Catalogue des cours
+model Cours {
+  id              Int                @id @default(autoincrement())
+  code            String             @unique
+  nom             String
+  duree           Int
+  programme       String
+  etapeEtude      String
+  typeSalle       String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  affectations    AffectationCours[] // Cours planifiés
+}
+
+model Salle {
+  id              Int                @id @default(autoincrement())
+  code            String             @unique
+  type            String
+  capacite        Int
+  createdAt       DateTime           @default(now())
+  disponibilites  Disponibilite[]
+  affectations    AffectationCours[]
+}
+
+model Professeur {
+  id              Int                @id @default(autoincrement())
+  matricule       String             @unique
+  nom             String
+  prenom          String
+  specialite      String
+  programme       String?            // Programme d'enseignement (optionnel)
+  chargeMax       Int                @default(30) // Charge horaire maximale par semaine
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  disponibilites  Disponibilite[]
+  affectations    AffectationCours[]
+
+  // Lien optionnel vers le compte utilisateur (unicité 0..1 : index filtré Professeur_id_user_uq)
+  id_user         Int?
+  user            User?              @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Disponibilite {
+  id              Int         @id @default(autoincrement())
+  jour            String      // Lundi, Mardi, etc.
+  plageHoraire    String      // ex: "08:00-10:00"
+  typeConflit     String      // "Salle" ou "Professeur"
+  
+  // Relations
+  id_professeur   Int?
+  professeur      Professeur? @relation(fields: [id_professeur], references: [id], onDelete: Cascade)
+  
+  id_salle        Int?
+  salle           Salle?      @relation(fields: [id_salle], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime    @default(now())
+}
+
+// Semestres (périodes d'études ex: Hiver 2026, Été 2026)
+model Semestre {
+  id              Int                @id @default(autoincrement())
+  nom             String             @unique // ex: "Hiver 2026"
+  dateDebut       DateTime
+  dateFin         DateTime
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  affectations    AffectationCours[]
+  joursFeeries    JourFerie[]
+
+  // Rattachement optionnel à l'année scolaire (nullable : les semestres existants restent valides)
+  id_annee        Int?
+  annee           AnneeScolaire?     @relation(fields: [id_annee], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id_annee])
+}
+
+// Jours fériés et jours sans cours
+model JourFerie {
+  id              Int        @id @default(autoincrement())
+  date            DateTime
+  description     String     // ex: "Noël", "Congé de printemps"
+  
+  // Relations
+  id_semestre     Int
+  semestre        Semestre   @relation(fields: [id_semestre], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime   @default(now())
+  
+  @@unique([id_semestre, date])
+}
+
+// Cours planifiés (affectations)
+model AffectationCours {
+  id              Int        @id @default(autoincrement())
+  session         String?    // ex: "Hiver 2026" - Optionnel (pour compatibilité)
+  jour            String?    // ex: "Lundi" - Optionnel (pour compatibilité)
+  plageHoraire    String     // ex: "08:00-10:00"
+  date            DateTime?  // Date précise du cours
+
+  // Relations
+  id_cours        Int
+  cours           Cours      @relation(fields: [id_cours], references: [id])
+
+  id_professeur   Int?
+  professeur      Professeur? @relation(fields: [id_professeur], references: [id])
+
+  id_salle        Int
+  salle           Salle      @relation(fields: [id_salle], references: [id])
+
+  id_semestre     Int?
+  semestre        Semestre?  @relation(fields: [id_semestre], references: [id])
+
+  // Rattachement optionnel à un groupe (nullable : les affectations existantes restent valides)
+  id_groupe       Int?
+  groupe          Groupe?    @relation(fields: [id_groupe], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([id_groupe])
+  @@index([id_professeur])
+}
+
+// ============================================================================
+// Socle scolaire (Étape 1, uniquement additif)
+// SQL Server : pas de "Restrict" (NoAction), un seul chemin de cascade (erreur 1785)
+// et un seul NULL toléré dans un index UNIQUE. Les FK n'étant pas indexées par
+// Prisma, les index utiles sont déclarés explicitement.
+// ============================================================================
+
+// Année scolaire (ex: "2026-2027")
+model AnneeScolaire {
+  id        Int        @id @default(autoincrement())
+  libelle   String     @unique @db.NVarChar(20)
+  dateDebut DateTime   @db.Date
+  dateFin   DateTime   @db.Date
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  groupes   Groupe[]
+  semestres Semestre[]
+}
+
+// Niveau d'études (ex: "SEC1", "SEC2")
+model Niveau {
+  id      Int      @id @default(autoincrement())
+  code    String   @unique @db.NVarChar(20)
+  libelle String   @db.NVarChar(100)
+  ordre   Int
+  groupes Groupe[]
+}
+
+// Groupe (classe) d'une année scolaire pour un niveau
+model Groupe {
+  id           Int                @id @default(autoincrement())
+  code         String             @db.NVarChar(30)
+  capacite     Int?
+  id_annee     Int
+  annee        AnneeScolaire      @relation(fields: [id_annee], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id_niveau    Int
+  niveau       Niveau             @relation(fields: [id_niveau], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  inscriptions Inscription[]
+  affectations AffectationCours[]
+
+  @@unique([id_annee, code])
+  @@unique([id, id_annee]) // Cible de la FK composite d'Inscription (le groupe doit appartenir à la même année)
+  @@index([id_niveau])
+}
+
+// Élève ; id_user est nullable et sans @unique (l'unicité 0..1 vient de l'index filtré Eleve_id_user_uq)
+model Eleve {
+  id            Int               @id @default(autoincrement())
+  matricule     String            @unique @db.NVarChar(30)
+  nom           String            @db.NVarChar(100)
+  prenom        String            @db.NVarChar(100)
+  dateNaissance DateTime?         @db.Date
+  id_user       Int?
+  user          User?             @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  inscriptions  Inscription[]
+  liens         LienEleveTuteur[]
+
+  @@index([nom, prenom])
+}
+
+// Tuteur légal ; le rôle User d'un tuteur est "parent" (index filtré Tuteur_id_user_uq pour l'unicité 0..1)
+model Tuteur {
+  id        Int               @id @default(autoincrement())
+  nom       String            @db.NVarChar(100)
+  prenom    String            @db.NVarChar(100)
+  courriel  String?           @db.NVarChar(150)
+  telephone String?           @db.NVarChar(30)
+  id_user   Int?
+  user      User?             @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  liens     LienEleveTuteur[]
+}
+
+// Lien élève - tuteur avec droits de lecture / d'action
+model LienEleveTuteur {
+  id        Int      @id @default(autoincrement())
+  id_eleve  Int
+  eleve     Eleve    @relation(fields: [id_eleve], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id_tuteur Int
+  tuteur    Tuteur   @relation(fields: [id_tuteur], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parente   String   @db.NVarChar(30)
+  peutLire  Boolean  @default(true)
+  peutAgir  Boolean  @default(false)
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([id_eleve, id_tuteur])
+  @@index([id_tuteur])
+}
+
+// Inscription d'un élève à un groupe pour une année ; la FK composite (id_groupe, id_annee)
+// garantit que le groupe appartient bien à l'année de l'inscription.
+// Index filtré Inscription_eleve_annee_active_uq (une seule inscription "active" par élève et par année)
+// et contrainte CHECK Inscription_statut_ck : voir la migration socle_index_filtres.
+model Inscription {
+  id        Int      @id @default(autoincrement())
+  id_eleve  Int
+  eleve     Eleve    @relation(fields: [id_eleve], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id_annee  Int
+  id_groupe Int
+  groupe    Groupe   @relation(fields: [id_groupe, id_annee], references: [id, id_annee], onDelete: NoAction, onUpdate: NoAction)
+  statut    String   @default("active") @db.NVarChar(20)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id_eleve, id_annee])
+  @@index([id_groupe])
+}

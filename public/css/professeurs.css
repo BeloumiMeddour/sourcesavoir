@@ -1,0 +1,158 @@
+/* ==============================================
+   PAGE PROFESSEURS — EPlanify
+   Organisé par parties :
+     1. BADGES STATUT PROFESSEUR
+     2. BARRE CHARGE HORAIRE (prof)
+     3. TABLEAU DISPONIBILITÉS (modal)
+     4. BOUTONS ACTIONS DISPONIBILITÉS
+     5. RESPONSIVE
+============================================== */
+
+/* ── 1. BADGES STATUT PROFESSEUR ─────────── */
+
+.badge-statut {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.22rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.badge-disponible {
+    background: var(--vert-clair);
+    color: var(--vert-fonce);
+}
+
+.badge-complet {
+    background: var(--orange-clair);
+    color: #92400e;
+}
+
+.badge-indisponible {
+    background: var(--rouge-clair);
+    color: var(--rouge);
+}
+
+/* ── 2. BARRE CHARGE HORAIRE (prof) ───────── */
+
+.prof-charge-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.prof-charge-label {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--gris-fonce);
+}
+
+.prof-charge-bar-wrap {
+    height: 7px;
+    background: var(--gris-fond);
+    border-radius: 4px;
+    overflow: hidden;
+    width: 100%;
+    min-width: 80px;
+}
+
+.prof-charge-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.prof-charge-bar.bas   { background: var(--vert); }
+.prof-charge-bar.moyen { background: var(--orange); }
+.prof-charge-bar.haut  { background: var(--rouge); }
+
+.prof-charge-text {
+    font-size: 0.76rem;
+    color: var(--gris-texte);
+    font-weight: 500;
+}
+
+/* ── 3. TABLEAU DISPONIBILITÉS (modal) ────── */
+
+#modale-disponibilites .modale-contenu {
+    max-width: 600px;
+    width: 92%;
+}
+
+#tableau-disponibilites tr {
+    border-bottom: 1px solid var(--gris-fond);
+}
+
+#tableau-disponibilites td {
+    padding: 0.55rem 0.75rem;
+    vertical-align: middle;
+}
+
+.dispo-jour-label {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--gris-fonce);
+    min-width: 90px;
+}
+
+.dispo-time-input {
+    padding: 0.42rem 0.65rem;
+    border: 1.5px solid var(--gris-bordure);
+    border-radius: 7px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    width: 90px;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+.dispo-time-input:focus {
+    outline: none;
+    border-color: var(--rouge-lacite);
+    box-shadow: 0 0 0 3px rgba(0, 104, 56, 0.1);
+}
+
+.dispo-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--rouge-lacite);
+    cursor: pointer;
+}
+
+/* ── 4. BOUTONS ACTIONS DISPONIBILITÉS ────── */
+
+.dispo-actions-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--gris-fond);
+}
+
+/* ── 5. RESPONSIVE ────────────────────────── */
+
+@media (max-width: 768px) {
+    .dispo-actions-bar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 600px) {
+    #modale-disponibilites .modale-contenu {
+        width: 95%;
+        padding: 1.25rem;
+    }
+
+    .dispo-time-input {
+        width: 75px;
+        font-size: 0.8rem;
+    }
+
+    .prof-charge-bar-wrap {
+        min-width: unset;
+    }
+}

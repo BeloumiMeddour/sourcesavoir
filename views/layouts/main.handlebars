@@ -1,0 +1,76 @@
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{titre}}</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+        <!-- CSS de base (toujours chargés) -->
+        <link rel="stylesheet" href="./css/base.css" />
+        <link rel="stylesheet" href="./css/layout.css" />
+        <link rel="stylesheet" href="./css/components.css" />
+
+        <!-- CSS spécifique à la page -->
+        {{#each styles}}
+            <link rel="stylesheet" href="{{this}}" />
+        {{/each}}
+
+        <!-- Patch global fetch pour inclure les credentials (DOIT être avant les modules) -->
+        <script>
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options = {}) {
+                if (!options.credentials) {
+                    options.credentials = 'include';
+                }
+                return originalFetch.call(window, url, options);
+            };
+        </script>
+
+        {{#each scripts}}
+            <script type="module" src="{{this}}"></script>
+        {{/each}}
+        <script type="module" src="/js/deconnexion.js"></script>
+    </head>
+    <body>
+        <div class="app-layout">
+            {{> header}}
+            <div class="app-main">
+                <div id="message"></div>
+                <main>
+                    {{{body}}}
+                </main>
+            </div>
+        </div>
+        
+        <script>
+            // Réinitialiser tous les modules après que le DOM soit prêt
+            document.addEventListener('DOMContentLoaded', function() {
+                // Attendez un peu après DOMContentLoaded pour que tous les modules se chargent
+                setTimeout(function() {
+                    // Appel du chargerXXX si la fonction existe globally
+                    if (typeof initDOMElements === 'function') {
+                        initDOMElements();
+                        if (typeof chargerCours === 'function') chargerCours();
+                        if (typeof chargerProfesseurs === 'function') chargerProfesseurs();
+                        if (typeof chargerSalles === 'function') chargerSalles();
+                        if (typeof chargerAffectations === 'function') chargerAffectations();
+                        if (typeof chargerSemestres === 'function') chargerSemestres();
+                        if (typeof chargerStatistiques === 'function') chargerStatistiques();
+                        if (typeof chargerFiltres === 'function') chargerFiltres();
+                        if (typeof chargerUtilisateurs === 'function') chargerUtilisateurs();
+                        if (typeof activerTriTableau === 'function') {
+                            activerTriTableau("table-cours");
+                            activerTriTableau("table-professeurs");
+                            activerTriTableau("table-salles");
+                            activerTriTableau("table-affectations");
+                            activerTriTableau("table-semestres");
+                        }
+                    }
+                }, 100);
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,3 @@
+# Les migrations Prisma sont identifiées par une somme de contrôle du contenu du fichier :
+# avec core.autocrlf=true, un checkout Windows (CRLF) donnerait une somme différente de Linux (LF).
+prisma/migrations/**/*.sql text eol=lf
