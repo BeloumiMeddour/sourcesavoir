@@ -201,3 +201,41 @@ export function htmlLigneJourFerie(jf, dateTexte) {
             </td>
         `;
 }
+
+/**
+ * Date de naissance affichée (AAAA-MM-JJ) : les dix premiers caractères d'une date ISO
+ * renvoyée par l'API (« 2014-04-12T00:00:00.000Z »). Toute autre valeur donne "".
+ * @param {*} valeur - chaîne ISO, null ou undefined
+ * @returns {string}
+ */
+export function dateNaissanceAffichee(valeur) {
+    if (typeof valeur !== "string") return "";
+    const debut = valeur.slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(debut) ? debut : "";
+}
+
+/**
+ * Cellules d'une ligne du tableau des élèves.
+ * @param {Object} eleve - élève { id, matricule, nom, prenom, dateNaissance }
+ * @returns {string} HTML des cellules <td>
+ */
+export function htmlLigneEleve(eleve) {
+    return `
+            <td>${echapperHtml(eleve.matricule)}</td>
+            <td>${echapperHtml(eleve.nom)}</td>
+            <td>${echapperHtml(eleve.prenom)}</td>
+            <td>${echapperHtml(dateNaissanceAffichee(eleve.dateNaissance))}</td>
+        `;
+}
+
+/**
+ * Cellule affichée quand le tableau des élèves est vide.
+ * @param {number} nombreColonnes - nombre de colonnes du tableau
+ * @returns {string} HTML d'une cellule <td>
+ */
+export function htmlLigneVideEleves(nombreColonnes) {
+    return '<td colspan="' + echapperHtml(nombreColonnes) + '"><div class="empty-state">' +
+        '<div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>' +
+        "<h3>Aucun élève</h3><p>Ajoutez un élève avec le bouton ci-dessus.</p></div></td>";
+}

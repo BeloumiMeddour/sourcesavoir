@@ -57,6 +57,20 @@ export const aRole = (...roles) => (req, res, next) => {
     return next();
 };
 
+/**
+ * Expose aux vues Handlebars le droit de gérer les données scolaires, pour que
+ * l'en-tête n'affiche le lien « Élèves » qu'à ceux qui peuvent l'ouvrir. C'est un
+ * simple confort d'affichage : les routes vérifient elles-mêmes les droits.
+ * Le rôle est lu sur req.user (relu à chaque requête), avec un compte validé.
+ * @type {import("express").RequestHandler}
+ */
+export const exposerDroitsVues = (req, res, next) => {
+    const role = req.user?.role;
+    res.locals.peut_gerer_scolaire =
+        req.user?.etat === "valide" && (role === ROLES.ADMIN || role === ROLES.RESPONSABLE);
+    next();
+};
+
 // Message unique pour tous les cas de « fiche élève non accessible » (voir exigerLectureEleve).
 export const MESSAGE_ELEVE_INTROUVABLE = "Élève introuvable.";
 

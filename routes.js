@@ -305,6 +305,18 @@ router.get("/salles", estAuthentifie, (req, res) => {
     });
 });
 
+// Page des élèves (socle scolaire) : réservée aux rôles de gestion.
+// Les données passent par /api/scolaire, qui revérifie les droits.
+router.get("/eleves", aRole(ROLES.ADMIN, ROLES.RESPONSABLE), (req, res) => {
+    res.render("eleves", {
+        titre: "Élèves | Planify",
+        styles: [],
+        scripts: ["./js/eleves.js"],
+        user_email: req.user.email || null,
+        is_admin: req.user.role === ROLES.ADMIN,
+    });
+});
+
 // Page des affectations
 router.get("/affectations", estAuthentifie, (req, res) => {
     res.render("affectations", {
@@ -410,7 +422,7 @@ router.put("/api/utilisateurs/:id", estAdmin, async (req, res) => {
 });
 
 // Rôles acceptés par l'application
-import { ROLES } from "./middleware/permissions.js";
+import { ROLES, aRole } from "./middleware/permissions.js";
 
 // Attribuer un rôle à un utilisateur
 router.put("/api/utilisateurs/:id/role", estAdmin, async (req, res) => {

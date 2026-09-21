@@ -2,7 +2,7 @@
 
 Reprise du 20 septembre 2026. Ce lot ajoute une API au projet Planify pour les
 années, niveaux, groupes, élèves, tuteurs, liens familiaux et inscriptions.
-Il ne comporte pas encore d'interface scolaire dans les pages Handlebars.
+Seule la page Élèves existe comme interface scolaire (voir « Interface »).
 
 ## Accès
 
@@ -97,6 +97,21 @@ absent, inaccessible ou dont l'identifiant est invalide donne le même `404` :
 `{"error":"Élève introuvable."}`. Le modèle réapplique le filtre lors de la
 lecture, même après la garde, pour couvrir une révocation du lien entre les
 deux requêtes.
+
+## Interface
+
+La page `/eleves` (menu « Gestion des Élèves ») liste les élèves et permet d'en
+créer un (matricule, nom, prénom, date de naissance facultative) à partir de
+`GET` et `POST /api/scolaire/eleves`. Elle est réservée aux rôles `admin` et
+`responsable` dont le compte est validé : les autres rôles reçoivent `403`, un
+visiteur non connecté est redirigé vers `/connexion`. Le lien du menu n'est
+qu'un confort d'affichage (`exposerDroitsVues`) : la route de la page et l'API
+vérifient chacune les droits. Les données de l'API sont échappées avant d'entrer
+dans le HTML (`public/js/rendu.js`).
+
+Ce que la page ne fait pas encore : modifier ou supprimer un élève (l'API n'offre
+que la lecture et la création), gérer années, niveaux, groupes, inscriptions et
+liens familiaux, et les vues enseignant, parent et élève.
 
 ## Historique et intégrité
 

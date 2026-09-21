@@ -8,7 +8,7 @@ import compression from "compression";
 import cors from "cors";
 import routeExterne from "./routes.js";
 import routeurScolaire, { gererErreurScolaire } from "./routes/scolaire.js";
-import { gardeRoutesHeritees } from "./middleware/permissions.js";
+import { gardeRoutesHeritees, exposerDroitsVues } from "./middleware/permissions.js";
 import { brancherProtectionsEntree } from "./middleware/entree.js";
 import cspOptions from "./csp-options.js";
 import { engine } from "express-handlebars";
@@ -65,6 +65,9 @@ app.use(express.static("public"));
 // Servir les librairies PDF depuis node_modules
 app.use("/node_modules/html2canvas", express.static("node_modules/html2canvas"));
 app.use("/node_modules/jspdf", express.static("node_modules/jspdf"));
+
+// Droits exposés aux vues (lien « Élèves » de l'en-tête) : affichage seulement
+app.use(exposerDroitsVues);
 
 // Protections de l'entrée : trust proxy, CSRF, limitation des connexions et des inscriptions
 brancherProtectionsEntree(app);

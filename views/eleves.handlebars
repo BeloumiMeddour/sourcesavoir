@@ -1,0 +1,51 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Gestion des Élèves</h1>
+        <div class="right-actions">
+            <input type="text" class="search-input" id="search-eleves" placeholder="Rechercher..." />
+            <button class="btn btn-vert" id="btn-toggle-form">+ Ajouter un Élève</button>
+        </div>
+    </div>
+
+    <div class="form-card hidden" id="form-card">
+        <form id="form-eleve">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="matricule">Matricule</label>
+                    <input type="text" id="matricule" placeholder="Ex: E-2026-001" maxlength="30" required />
+                </div>
+                <div class="form-group">
+                    <label for="date-naissance">Date de naissance</label>
+                    <input type="date" id="date-naissance" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" id="nom" placeholder="Ex: Tremblay" maxlength="100" required />
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" id="prenom" placeholder="Ex: Lina" maxlength="100" required />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter l'élève</button>
+        </form>
+    </div>
+
+    <div id="msg-eleve" class="message"></div>
+
+    <div class="table-container">
+        <table id="table-eleves">
+            <thead>
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date de naissance</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
