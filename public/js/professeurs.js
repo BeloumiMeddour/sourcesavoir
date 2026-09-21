@@ -1,6 +1,7 @@
 // === GESTION DES PROFESSEURS ===
 
 import { afficherMessage, activerTriTableau } from './utils.js';
+import { echapperHtml } from './echapper.js';
 
 let formProfesseur;
 let msgProfesseur;
@@ -66,13 +67,14 @@ async function chargerProfesseurs() {
         tr.setAttribute("data-specialite", p.specialite);
         tr.setAttribute("data-programme", p.programme || "");
         tr.innerHTML =
-            "<td>" + p.matricule + "</td>" +
-            "<td>" + p.nom + "</td>" +
-            "<td>" + p.prenom + "</td>" +
-            "<td>" + p.specialite + "</td>" +
-            "<td>" + (p.programme || "-") + "</td>" +
+            "<td>" + echapperHtml(p.matricule) + "</td>" +
+            "<td>" + echapperHtml(p.nom) + "</td>" +
+            "<td>" + echapperHtml(p.prenom) + "</td>" +
+            "<td>" + echapperHtml(p.specialite) + "</td>" +
+            "<td>" + echapperHtml(p.programme || "-") + "</td>" +
             '<td><div class="actions-cell">' +
-                '<button class="btn btn-vert" onclick="ouvrirModalDisponibilites(' + p.id + ', \'' + p.prenom + ' ' + p.nom + '\')">Disponibilités</button>' +
+                // Le nom est un littéral JS dans l'attribut onclick : JSON.stringify puis échappement HTML
+                '<button class="btn btn-vert" onclick="ouvrirModalDisponibilites(' + p.id + ', ' + echapperHtml(JSON.stringify(p.prenom + ' ' + p.nom)) + ')">Disponibilités</button>' +
                 '<button class="btn btn-modifier" onclick="modifierProfesseur(' + p.id + ')">Modifier</button>' +
                 '<button class="btn btn-supprimer" onclick="supprimerProfesseur(' + p.id + ')">Supprimer</button>' +
             '</div></td>';

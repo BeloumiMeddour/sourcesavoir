@@ -1,6 +1,7 @@
 // === GESTION DES COURS ===
 
 import { afficherMessage, activerTriTableau } from './utils.js';
+import { echapperHtml } from './echapper.js';
 
 let formCours;
 let msgCours;
@@ -74,12 +75,12 @@ async function chargerCours() {
         tr.setAttribute("data-etape", c.etapeEtude);
         tr.setAttribute("data-typesalle", c.typeSalle);
         tr.innerHTML =
-            "<td>" + c.code + "</td>" +
-            "<td>" + c.nom + "</td>" +
-            "<td>" + c.duree + "h</td>" +
-            "<td>" + c.programme + "</td>" +
-            "<td>Étape " + c.etapeEtude + "</td>" +
-            "<td>" + c.typeSalle + "</td>" +
+            "<td>" + echapperHtml(c.code) + "</td>" +
+            "<td>" + echapperHtml(c.nom) + "</td>" +
+            "<td>" + echapperHtml(c.duree) + "h</td>" +
+            "<td>" + echapperHtml(c.programme) + "</td>" +
+            "<td>Étape " + echapperHtml(c.etapeEtude) + "</td>" +
+            "<td>" + echapperHtml(c.typeSalle) + "</td>" +
             '<td><div class="actions-cell">' +
                 '<button class="btn btn-modifier" onclick="modifierCours(' + c.id + ')">Modifier</button>' +
                 '<button class="btn btn-supprimer" onclick="supprimerCours(' + c.id + ')">Supprimer</button>' +

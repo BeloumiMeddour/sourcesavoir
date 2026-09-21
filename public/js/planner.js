@@ -1,5 +1,7 @@
 // === EMPLOI DU TEMPS (PLANNER) - Vue semestre avec sélection ===
 
+import { htmlJourFerie, htmlEvenementReservation } from './rendu.js';
+
 // Éléments du DOM - Will be initialized when page loads
 var grid;
 var labelSemaine;
@@ -629,10 +631,7 @@ function dessinerGrille() {
                     ferieEvent.className = "planning-event ferie";
                     ferieEvent.style.height = "calc(" + nbHeures + " * var(--cell-height) - 4px)";
                     ferieEvent.title = jourFerie ? jourFerie.description : "Jour férié";
-                    ferieEvent.innerHTML =
-                        '<span class="ferie-label">' +
-                        (jourFerie ? jourFerie.description : "Jour férié") +
-                        '</span>';
+                    ferieEvent.innerHTML = htmlJourFerie(jourFerie ? jourFerie.description : "Jour férié");
 
                     cell.appendChild(ferieEvent);
                 }
@@ -700,19 +699,11 @@ function dessinerGrille() {
                         (a.professeur ? "Prof: " + a.professeur.prenom + " " + a.professeur.nom : "") + "\n" +
                         "Horaire: " + a.plageHoraire;
 
-                    // Contenu adaptatif selon la durée
-                    var html = '<div class="ev-code">' + codeCours + '</div>';
-                    if (dureeHeures >= 1.5) {
-                        html += '<div class="ev-horaire">' + horaire + '</div>';
-                        html += '<div class="ev-salle">' + codeSalle + '</div>';
-                    }
-                    if (dureeHeures >= 2) {
-                        if (nomCours) html += '<div class="ev-nom">' + nomCours + '</div>';
-                    }
-                    if (dureeHeures >= 2.5 && nomProf) {
-                        html += '<div class="ev-prof">' + nomProf + '</div>';
-                    }
-                    ev.innerHTML = html;
+                    // Contenu adaptatif selon la durée (rendu.js échappe les données venant de l'API)
+                    ev.innerHTML = htmlEvenementReservation(
+                        { codeCours: codeCours, horaire: horaire, codeSalle: codeSalle, nomCours: nomCours, nomProf: nomProf },
+                        dureeHeures
+                    );
 
                     cell.style.overflow = "visible";
                     cell.style.zIndex = "5";

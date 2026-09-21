@@ -1,6 +1,7 @@
 // === GESTION DES AFFECTATIONS ===
 
 import { afficherMessage, activerTriTableau } from './utils.js';
+import { htmlChargeSalle, htmlPlanningProfesseur, htmlErreurChargement, htmlLigneAffectation } from './rendu.js';
 
 // Convertit un jour (nombre "1", ou nom "Lundi") en indice backend (0=Dim, 1=Lun, ...)
 function normaliserJour(jour) {
@@ -262,41 +263,11 @@ async function afficherDisponibiliteSalle() {
             }
         });
 
-        // Construire le HTML
-        var html = '<div class="mini-planner-detail">' +
-            '<div class="mini-planner-header">Charge de la salle</div>' +
-            '<div class="mini-planner-grid-detail">';
-
-        // Header avec les jours
-        html += '<div class="mini-planner-cell mini-planner-hour">h</div>';
-        jours.forEach(function(j) {
-            html += '<div class="mini-planner-cell mini-planner-day-header">' + j + '</div>';
-        });
-
-        // Lignes horaires
-        for (var h = 8; h < 22; h++) {
-            html += '<div class="mini-planner-cell mini-planner-hour">' + h + 'h</div>';
-            
-            for (var d = 0; d < 7; d++) {
-                var cell = course_map[h][d];
-                
-                if (cell && cell.code) {
-                    if (cell.isStart) {
-                        html += '<div class="mini-planner-cell mini-planner-slot occupied">' + cell.code + '</div>';
-                    } else {
-                        html += '<div class="mini-planner-cell mini-planner-slot occupied"></div>';
-                    }
-                } else {
-                    html += '<div class="mini-planner-cell mini-planner-slot available"></div>';
-                }
-            }
-        }
-
-        html += '</div></div>';
-        panel.innerHTML = html;
+        // Construire le HTML (rendu.js échappe les données venant de l'API)
+        panel.innerHTML = htmlChargeSalle(course_map, jours);
     } catch (error) {
         console.error("Erreur affichage disponibilité salle:", error);
-        panel.innerHTML = '<p class="info-text">Erreur de chargement (détail: ' + error.message + ')</p>';
+        panel.innerHTML = htmlErreurChargement(error.message);
     }
 }
 
@@ -374,43 +345,9 @@ async function afficherDisponibleProf(idProf) {
             }
         });
 
-        // Même structure CSS que le calendrier salle
-        var html = '<div class="mini-planner-detail"><div class="mini-planner-header">Planning semaine</div>';
-        html += '<div class="mini-planner-grid-detail">';
+        // Même structure CSS que le calendrier salle (rendu.js échappe les données venant de l'API)
+        panel.innerHTML = htmlPlanningProfesseur(cours_map, dispos_map, jours, backendJourIndices);
 
-        // En-tête coin vide
-        html += '<div class="mini-planner-cell mini-planner-hour"></div>';
-
-        // En-têtes jours
-        jours.forEach(function(j) {
-            html += '<div class="mini-planner-cell mini-planner-day-header">' + j + '</div>';
-        });
-
-        // Lignes horaires
-        for (var h = 8; h < 22; h++) {
-            html += '<div class="mini-planner-cell mini-planner-hour">' + h + 'h</div>';
-
-            for (var d = 0; d < 7; d++) {
-                var backendJour = backendJourIndices[d];
-                var key = backendJour + "-" + h;
-                var coursDuCreno = cours_map[key];
-                var hasDispo = dispos_map[key];
-
-                // Orange = occupé, Vert = disponible, Gris = indisponible
-                var slotClass = coursDuCreno ? 'occupied' : (hasDispo ? 'available' : 'unavailable');
-
-                html += '<div class="mini-planner-cell mini-planner-slot ' + slotClass + '">';
-                if (coursDuCreno && coursDuCreno.isStart) {
-                    var entryData = coursDuCreno.data;
-                    html += entryData.cours ? entryData.cours.code : '?';
-                }
-                html += '</div>';
-            }
-        }
-
-        html += '</div></div>';
-        panel.innerHTML = html;
-        
     } catch (error) {
         console.error("Erreur affichage planner prof:", error);
         panel.innerHTML = '<p class="info-text">Erreur de chargement</p>';
@@ -528,8 +465,6 @@ async function afficherLigneAffectation(a) {
         dateJourStr = "—";
     }
 
-    var profNom = a.professeur ? a.professeur.prenom + " " + a.professeur.nom : "—";
-
     tr.setAttribute("data-id", a.id);
     tr.setAttribute("data-id_cours", a.id_cours);
     tr.setAttribute("data-id_salle", a.id_salle);
@@ -539,25 +474,8 @@ async function afficherLigneAffectation(a) {
     tr.setAttribute("data-plage", a.plageHoraire);
 
 
-    var salleHtml = a.salle ? '<div>' + a.salle.code + '</div>' : '<div>—</div>';
-
-    var profHtml = '<div>—</div>';
-    if (profNom !== "—") {
-        profHtml = '<div>' + profNom + '</div>';
-    }
-
-    tr.innerHTML =
-        '<td>' + (a.cours ? (a.cours.programme || '') : '') + '</td>' +
-        '<td>' + (a.cours ? a.cours.code + ' - ' + a.cours.nom : '') + '</td>' +
-        '<td>' + salleHtml + '</td>' +
-        '<td>' + profHtml + '</td>' +
-        '<td>' + (a.id_semestre ? mapSemestresGlobal[a.id_semestre] || 'N/A' : 'N/A') + '</td>' +
-        '<td>' + dateJourStr + '</td>' +
-        '<td>' + a.plageHoraire + '</td>' +
-        '<td><div class="actions-cell">' +
-            '<button class="btn btn-modifier" onclick="modifierAffectation(' + a.id + ')">Modifier</button>' +
-            '<button class="btn btn-supprimer" onclick="supprimerAffectation(' + a.id + ')">Supprimer</button>' +
-        '</div></td>';
+    // Cellules construites par rendu.js : chaque donnée venant de l'API y est échappée
+    tr.innerHTML = htmlLigneAffectation(a, mapSemestresGlobal, dateJourStr);
 
     tbody.appendChild(tr);
 }

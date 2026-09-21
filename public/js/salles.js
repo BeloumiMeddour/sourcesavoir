@@ -1,6 +1,7 @@
 // === GESTION DES SALLES ===
 
 import { afficherMessage, activerTriTableau } from './utils.js';
+import { echapperHtml } from './echapper.js';
 
 let formSalle;
 let msgSalle;
@@ -65,9 +66,9 @@ async function chargerSalles() {
         tr.setAttribute("data-type", s.type || "");
         tr.setAttribute("data-capacite", s.capacite);
         tr.innerHTML =
-            "<td>" + s.code + "</td>" +
-            "<td>" + (s.type || "") + "</td>" +
-            "<td>" + s.capacite + "</td>" +
+            "<td>" + echapperHtml(s.code) + "</td>" +
+            "<td>" + echapperHtml(s.type) + "</td>" +
+            "<td>" + echapperHtml(s.capacite) + "</td>" +
             '<td><div class="actions-cell">' +
                 '<button class="btn btn-modifier" onclick="modifierSalle(' + s.id + ')">Modifier</button>' +
                 '<button class="btn btn-supprimer" onclick="supprimerSalle(' + s.id + ')">Supprimer</button>' +

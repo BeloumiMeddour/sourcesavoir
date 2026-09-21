@@ -96,7 +96,14 @@ async function inscription(event) {
         erreurs.style.color = "green";
         // window.location.replace("/connexion");
     } else if (response.status === 409) {
-        erreurs.innerText = "Un compte avec ce courriel existe déjà .";
+        erreurs.innerText = "Un compte avec ce courriel existe déjà.";
+    } else if (response.status === 400) {
+        const data = await response.json();
+        erreurs.innerText = data.error || "Données invalides.";
+        erreurs.style.color = "red";
+    } else {
+        erreurs.innerText = "Une erreur est survenue. Veuillez réessayer.";
+        erreurs.style.color = "red";
     }
 }
 

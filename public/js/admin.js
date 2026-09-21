@@ -1,6 +1,7 @@
 // === ADMINISTRATION - GESTION DES COMPTES ===
 
 import { afficherMessage, activerTriTableau } from './utils.js';
+import { echapperHtml } from './echapper.js';
 
 let formUtilisateur;
 let msgAdmin;
@@ -69,9 +70,9 @@ async function chargerUtilisateurs() {
         tr.setAttribute("data-nom", u.nom || "");
         tr.setAttribute("data-prenom", u.prenom || "");
         tr.innerHTML =
-            "<td>" + nomComplet.trim() + "</td>" +
-            "<td>" + u.email + "</td>" +
-            "<td>" + u.role + "</td>" +
+            "<td>" + echapperHtml(nomComplet.trim()) + "</td>" +
+            "<td>" + echapperHtml(u.email) + "</td>" +
+            "<td>" + echapperHtml(u.role) + "</td>" +
             "<td>" + etatBadge + "</td>" +
             "<td>" + dateCreation + "</td>" +
             '<td><div class="actions-cell">' +

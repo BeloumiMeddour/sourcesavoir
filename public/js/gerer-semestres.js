@@ -1,6 +1,7 @@
 // === GESTION DES SEMESTRES ET JOURS FÉRIÉS ===
 
 import { afficherMessage } from './utils.js';
+import { htmlLigneSemestre, htmlLigneJourFerie } from './rendu.js';
 
 var semestres = [];
 var joursFeeries = [];
@@ -103,22 +104,9 @@ function afficherSemestres() {
         
         var dateDebut = formatDate(sem.dateDebut);
         var dateFin = formatDate(sem.dateFin);
-        var joursCount = (sem.joursFeeries ? sem.joursFeeries.length : 0);
-        
-        tr.innerHTML = `
-            <td>${sem.nom}</td>
-            <td>${dateDebut}</td>
-            <td>${dateFin}</td>
-            <td>
-                <button class="btn btn-petit btn-bleu" data-action="manage-feries" data-id="${sem.id}">
-                    ${joursCount} jour${joursCount !== 1 ? 's' : ''} - Gérer
-                </button>
-            </td>
-            <td>
-                <button class="btn btn-modifier" data-action="edit" data-id="${sem.id}">Modifier</button>
-                <button class="btn btn-supprimer" data-action="delete" data-id="${sem.id}">Supprimer</button>
-            </td>
-        `;
+
+        // Cellules construites par rendu.js : nom du semestre et identifiants y sont échappés
+        tr.innerHTML = htmlLigneSemestre(sem, dateDebut, dateFin);
         tableSemestres.appendChild(tr);
     });
 
@@ -252,13 +240,8 @@ function afficherJoursFeeries() {
     
     joursFeeries.forEach(function(jf) {
         var tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${formatDate(jf.date)}</td>
-            <td>${jf.description}</td>
-            <td>
-                <button class="btn btn-supprimer" data-action="delete-ferie" data-id="${jf.id}">Supprimer</button>
-            </td>
-        `;
+        // Cellules construites par rendu.js : la description saisie par l'utilisateur y est échappée
+        tr.innerHTML = htmlLigneJourFerie(jf, formatDate(jf.date));
         tableJoursFeeries.appendChild(tr);
     });
 

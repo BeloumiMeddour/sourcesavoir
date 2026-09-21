@@ -87,17 +87,32 @@ export function afficherMessage(element, texte, type) {
     var toast = document.createElement("div");
     toast.className = "toast toast--" + type;
 
-    var icon = type === "succes" ? "✓" : "✕";
-    toast.innerHTML =
-        '<span class="toast-icon">' + icon + '</span>' +
-        '<span class="toast-text">' + texte + '</span>' +
-        '<button class="toast-close" aria-label="Fermer">&#x2715;</button>' +
-        '<div class="toast-progress"></div>';
+    // Le texte peut venir de l'API (err.error) : il est inséré via textContent, jamais interprété comme du HTML
+    var spanIcone = document.createElement("span");
+    spanIcone.className = "toast-icon";
+    spanIcone.textContent = type === "succes" ? "✓" : "✕";
+
+    var spanTexte = document.createElement("span");
+    spanTexte.className = "toast-text";
+    spanTexte.textContent = texte;
+
+    var boutonFermer = document.createElement("button");
+    boutonFermer.className = "toast-close";
+    boutonFermer.setAttribute("aria-label", "Fermer");
+    boutonFermer.textContent = "✕";
+
+    var barreProgression = document.createElement("div");
+    barreProgression.className = "toast-progress";
+
+    toast.appendChild(spanIcone);
+    toast.appendChild(spanTexte);
+    toast.appendChild(boutonFermer);
+    toast.appendChild(barreProgression);
 
     container.appendChild(toast);
 
     // Fermeture manuelle
-    toast.querySelector(".toast-close").addEventListener("click", function () {
+    boutonFermer.addEventListener("click", function () {
         dismissToast(toast);
     });
 

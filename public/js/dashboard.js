@@ -216,13 +216,14 @@ function renderTopList(containerId, items, labelField) {
         const row = document.createElement('div');
         row.className = 'tl-item';
         
-        row.innerHTML = `
-            <div class="tl-rank">${i + 1}</div>
-            <div class="tl-name">${item[labelField]}</div>
-            <div class="tl-bar-wrap"><div class="tl-bar" style="width: ${pct}%"></div></div>
-            <div class="tl-count">${item.count}</div>
-        `;
-        
+        // Construit via le DOM (textContent) : le nom d'un professeur ou d'une salle vient de l'API,
+        // donc d'un utilisateur. dashboard.js est un script classique : pas d'import de echapper.js.
+        appendEl(row, 'div', 'tl-rank', i + 1);
+        appendEl(row, 'div', 'tl-name', item[labelField]);
+        const barWrap = appendEl(row, 'div', 'tl-bar-wrap');
+        appendEl(barWrap, 'div', 'tl-bar').style.width = pct + '%';
+        appendEl(row, 'div', 'tl-count', item.count);
+
         el.appendChild(row);
     });
 }
