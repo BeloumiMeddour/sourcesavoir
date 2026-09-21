@@ -199,12 +199,12 @@ node node_modules/jest/bin/jest.js --runInBand --coverage=false
 
 Les tests simulent Prisma. Ils vérifient les filtres, les contrôles HTTP,
 la validation, les appels transactionnels et la conservation de l'historique.
-Ils ne prouvent pas l'exécution des requêtes sur un vrai SQL Server.
+Ils ne prouvent pas, à eux seuls, l'exécution des requêtes sur un vrai SQL Server :
+c'est le rôle de la recette décrite plus bas.
 Les migrations SQL (M0 à M3), le retour arrière `prisma/rollbacks/socle_down.sql`
 et ses garde-fous ont été rejoués sur des bases scratch SQL Server LocalDB 15,
 supprimées ensuite, avec des scripts de banc qui ne sont pas versionnés dans le
-dépôt. Cette validation ne porte que sur le SQL : elle ne prouve pas le
-comportement du client Prisma sur une vraie base.
+dépôt.
 
 Le retour arrière n'annule pas M0 (`User.etat` est utilisé par l'application).
 Il refuse de s'exécuter s'il reste des données du socle, sauf si `@forcer` est
@@ -253,16 +253,33 @@ Ce seed n'est pas exécuté pendant les tests et ne sert jamais à alimenter la
 base réelle. La procédure des migrations et du baseline est décrite dans
 [procedure-prisma.md](../../procedure-prisma.md).
 
-## Recette restant à exécuter sur SQL Server TCP
+## Recette sur SQL Server TCP (exécutée le 21 septembre 2026)
 
-1. Appliquer les migrations et le seed sur une base jetable accessible à Prisma.
-2. Se connecter comme parent de la famille A : voir ses deux enfants et recevoir
-   le même `404` pour un enfant de B et un identifiant inexistant.
-3. Se connecter comme second tuteur : ne voir que l'enfant rattaché.
-4. Se connecter comme élève : ne voir que sa propre fiche.
-5. Créer l'année suivante et promouvoir un élève : retrouver les deux
-   inscriptions, sans modification de l'ancienne.
-6. Vérifier les refus SQL des doublons actifs et des groupes d'une autre année.
+Exécutée sur une base jetable `planify_test` d'un SQL Server 2022 local
+(authentification Windows, TCP 1433), avec Prisma 6.19 et le serveur réel de
+l'application. La base réelle n'a pas été touchée. Résultat : 42 vérifications,
+0 échec, aucune erreur côté serveur.
+
+1. Les cinq migrations s'appliquent avec `npm run db:deploy:jetable` ; le garde-fou
+   passe, puis `npm run db:status` indique que le schéma est à jour. La variable
+   `DATABASE_URL` posée dans le processus l'emporte sur celle du `.env` (vérifié
+   en visant une base inexistante, qui provoque l'erreur `P1003`).
+2. Parent de la famille A : voit ses deux enfants, reçoit le même `404` pour un
+   enfant de B et pour un identifiant inexistant, `403` sur les années, la
+   création d'élève, les pages de gestion et l'ancienne API des salles.
+3. Second tuteur : ne voit que l'enfant rattaché.
+4. Élève : ne voit que sa propre fiche, `404` sur celle d'un autre.
+5. Année suivante et promotion : les deux inscriptions sont retrouvées, l'ancienne
+   n'est pas modifiée ; une seconde promotion dans la même année est refusée.
+6. Refus SQL : matricule, code de niveau et groupe en double (`409`), deuxième
+   inscription active d'un élève dans l'année (`409`), groupe d'une autre année
+   que l'inscription (`400`).
+7. Administrateur : pages `/eleves` et `/structure`, lectures, créations et
+   validations (champ non autorisé, matricule vide, dates inversées).
+
+Le script de recette n'est pas versionné : il crée des données de test et ne doit
+jamais viser un serveur branché sur la base réelle. La base réelle, elle, n'a
+toujours pas les tables du socle (voir « Interface »).
 
 Les interfaces famille, les devoirs, remises et corrections appartiennent au
 lot suivant. Les corrections générales encore signalées dans le diagnostic

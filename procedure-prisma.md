@@ -83,6 +83,7 @@ Ces règles s'appliquent à toute base qui contient des données à conserver (A
 
 -   `npm run db:status` et `npm run db:deploy:jetable` passent d'abord par `scripts/garde-jetable.js`, qui refuse toute base non locale (hôte autre que `localhost`, `127.0.0.1` ou `(localdb)`) ou dont le nom ne contient pas `jetable`, `scratch` ou `test`.
 -   Le garde-fou lit `DATABASE_URL` dans l'environnement du processus, pas dans `.env` : exporter la variable vers la base jetable avant de lancer ces scripts. Il n'affiche jamais l'URL ni le mot de passe.
+-   Exemple d'URL pour un SQL Server local en authentification Windows (testé le 21 septembre 2026) : `sqlserver://localhost:1433;database=planify_test;integratedSecurity=true;trustServerCertificate=true`. Créer d'abord la base vide (`sqlcmd -S localhost -E -C -Q "CREATE DATABASE planify_test"`). La variable posée dans le processus l'emporte sur celle du `.env` : pour s'en assurer, viser une base inexistante (erreur `P1003` attendue).
 -   Ces deux scripts ne servent donc jamais pour la base réelle. Pour elle, la commande `migrate deploy` se lance à la main, après sauvegarde et validation sur une base jetable.
 
 ## Migrations : immuables
