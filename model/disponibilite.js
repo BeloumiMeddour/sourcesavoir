@@ -1,5 +1,6 @@
 // Importer le client Prisma
 import { PrismaClient } from "@prisma/client";
+import { primitiveOuIgnoree } from "./valeursPrimitives.js";
 
 // Créer une instance du client Prisma
 const prisma = new PrismaClient();
@@ -92,9 +93,18 @@ const updateDisponibilite = async (id, dispoData) => {
         throw new Error("Disponibilité non trouvée");
     }
 
+    // Liste blanche : on ne transmet jamais le corps de la requête tel quel à Prisma
+    // (id, createdAt, typeConflit, écritures imbriquées sur les relations...). Un champ undefined est ignoré.
+    // Seules les valeurs primitives passent : { increment: 1 } ou { set: ... } serait une opération Prisma.
+    const { jour, plageHoraire, id_professeur } = dispoData;
+
     const updatedDispo = await prisma.disponibilite.update({
         where: { id: id },
-        data: dispoData,
+        data: {
+            jour: primitiveOuIgnoree(jour),
+            plageHoraire: primitiveOuIgnoree(plageHoraire),
+            id_professeur: primitiveOuIgnoree(id_professeur),
+        },
     });
 
     return updatedDispo;

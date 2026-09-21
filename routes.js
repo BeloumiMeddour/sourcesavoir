@@ -83,6 +83,8 @@ router.get("/api/programmes", estAuthentifie, async (req, res) => {
     }
 });
 
+
+
 // Importation du passport
 import passport from "passport";
 import { envoyerEmailValidation } from "./services/email.js";
@@ -96,8 +98,53 @@ import { estAuthentifie, estAdmin } from "./middleware/auth.js";
 
 // Route pour l'inscription d'un nouvel utilisateur
 router.post("/inscription", async (request, response, next) => {
+    const { email, password, nom, prenom } = request.body;
+
+    // Validation email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== "string" || email.trim().length === 0) {
+        return response.status(400).json({ error: "L'adresse courriel est obligatoire." });
+    }
+    if (!emailRegex.test(email.trim())) {
+        return response.status(400).json({ error: "L'adresse courriel n'est pas valide." });
+    }
+    if (email.trim().length > 150) {
+        return response.status(400).json({ error: "L'adresse courriel ne peut pas dépasser 150 caractères." });
+    }
+
+    // Validation mot de passe
+    if (!password || typeof password !== "string" || password.length === 0) {
+        return response.status(400).json({ error: "Le mot de passe est obligatoire." });
+    }
+    if (password.length < 8) {
+        return response.status(400).json({ error: "Le mot de passe doit contenir au moins 8 caractères." });
+    }
+    if (password.length > 128) {
+        return response.status(400).json({ error: "Le mot de passe ne peut pas dépasser 128 caractères." });
+    }
+    if (!/[A-Z]/.test(password)) {
+        return response.status(400).json({ error: "Le mot de passe doit contenir au moins une lettre majuscule." });
+    }
+    if (!/[0-9]/.test(password)) {
+        return response.status(400).json({ error: "Le mot de passe doit contenir au moins un chiffre." });
+    }
+
+    // Validation nom / prénom
+    if (!nom || nom.trim().length < 2) {
+        return response.status(400).json({ error: "Le nom doit contenir au moins 2 caractères." });
+    }
+    if (nom.trim().length > 100) {
+        return response.status(400).json({ error: "Le nom ne peut pas dépasser 100 caractères." });
+    }
+    if (!prenom || prenom.trim().length < 2) {
+        return response.status(400).json({ error: "Le prénom doit contenir au moins 2 caractères." });
+    }
+    if (prenom.trim().length > 100) {
+        return response.status(400).json({ error: "Le prénom ne peut pas dépasser 100 caractères." });
+    }
+
     try {
-        await createUser(request.body.email, request.body.password, "user", request.body.nom, request.body.prenom);
+        await createUser(email.trim(), password, "user", nom?.trim() || null, prenom?.trim() || null);
         response.sendStatus(201);
     } catch (error) {
         if (error.code === "P2002") {
@@ -362,13 +409,19 @@ router.put("/api/utilisateurs/:id", estAdmin, async (req, res) => {
     }
 });
 
+// Rôles acceptés par l'application
+import { ROLES } from "./middleware/permissions.js";
+
 // Attribuer un rôle à un utilisateur
 router.put("/api/utilisateurs/:id/role", estAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     const { role } = req.body;
 
-    if (role !== "admin" && role !== "responsable" && role !== "user") {
-        return res.status(400).json({ error: "Rôle invalide. Utilisez 'admin', 'responsable' ou 'user'" });
+    const rolesValides = Object.values(ROLES);
+    if (!rolesValides.includes(role)) {
+        const liste = rolesValides.map((r) => `'${r}'`);
+        const dernier = liste.pop();
+        return res.status(400).json({ error: `Rôle invalide. Utilisez ${liste.join(", ")} ou ${dernier}` });
     }
 
     try {

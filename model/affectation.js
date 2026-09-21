@@ -1,5 +1,6 @@
 // Importer le client Prisma
 import { PrismaClient } from "@prisma/client";
+import { primitiveOuIgnoree } from "./valeursPrimitives.js";
 
 // Créer une instance du client Prisma
 const prisma = new PrismaClient();
@@ -24,6 +25,23 @@ function heureEnMinutes(heure) {
     const [h, m] = heure.split(":").map(Number);
     return h * 60 + m;
 }
+
+const NOMS_JOURS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+
+/**
+ * Convertit un jour de la semaine en indice (0 = dimanche ... 6 = samedi).
+ * Accepte le chiffre (nombre ou chaîne "0" à "6" : format des séances récurrentes) et le nom français
+ * ("Lundi"... : format des disponibilités et des anciennes séances).
+ * @param {string|number|null|undefined} jour
+ * @returns {number|null} l'indice, ou null si le jour est absent ou non reconnu
+ */
+const indiceJour = (jour) => {
+    if (jour === null || jour === undefined) return null;
+    const texte = String(jour).trim();
+    if (/^[0-6]$/.test(texte)) return Number(texte);
+    const indice = NOMS_JOURS.indexOf(texte);
+    return indice === -1 ? null : indice;
+};
 
 /**
  * Vérifie si deux plages horaires se chevauchent
@@ -122,6 +140,56 @@ const verifierConflitProfesseur = async (id_professeur, date, plageHoraire, excl
     const toutesAffectations = [...affectationsDate, ...affectationsJour];
 
     return toutesAffectations.some(function (a) {
+        return plagesSeChevauchent(plageHoraire, a.plageHoraire);
+    });
+};
+
+/**
+ * Indique si une séance est récurrente : pas de date précise, mais un jour de la semaine
+ * @param {Date|null} date
+ * @param {string|number|null} jour - "0" (dimanche) à "6" (samedi)
+ * @returns {boolean}
+ */
+const estRecurrente = (date, jour) => {
+    return !date && jour !== null && jour !== undefined && jour !== "";
+};
+
+/**
+ * Vérifie si une salle ou un professeur est déjà pris lorsque la séance contrôlée est récurrente
+ * (date null, jour "0" à "6"). Compare avec les autres séances récurrentes du même semestre et du
+ * même jour, puis avec les séances datées de ce semestre qui tombent ce jour de la semaine.
+ * @param {Object} critere - { id_salle } ou { id_professeur }
+ * @param {string|number} jour - "0" (dimanche) à "6" (samedi)
+ * @param {string} plageHoraire
+ * @param {number|null} exclureId - ID de l'affectation contrôlée, exclue de la comparaison
+ * @param {number|null} id_semestre
+ * @returns true si une autre séance chevauche cette plage horaire ce jour-là
+ */
+const verifierConflitRecurrent = async (critere, jour, plageHoraire, exclureId = null, id_semestre = null) => {
+    const filtres = { ...critere };
+    if (id_semestre !== null && id_semestre !== undefined) {
+        filtres.id_semestre = id_semestre;
+    }
+    if (exclureId) {
+        filtres.id = { not: exclureId };
+    }
+
+    // Autres séances récurrentes le même jour de la semaine
+    const affectationsRecurrentes = await prisma.affectationCours.findMany({
+        where: { ...filtres, date: null, jour: String(jour) },
+    });
+
+    // Séances datées du semestre : Prisma ne filtre pas sur le jour de la semaine, on le fait ici.
+    // Les dates sont stockées à midi UTC (normalizeDate) : on lit donc le jour en UTC.
+    const jourDeLaSemaine = Number(jour);
+    const affectationsDatees = await prisma.affectationCours.findMany({
+        where: { ...filtres, date: { not: null } },
+    });
+    const affectationsDateesCeJour = affectationsDatees.filter(function (a) {
+        return new Date(a.date).getUTCDay() === jourDeLaSemaine;
+    });
+
+    return [...affectationsRecurrentes, ...affectationsDateesCeJour].some(function (a) {
         return plagesSeChevauchent(plageHoraire, a.plageHoraire);
     });
 };
@@ -266,10 +334,21 @@ const assignerProfesseur = async (id_affectation, id_professeur) => {
         throw new Error("Affectation non trouvée");
     }
 
-    // Vérifier si le professeur est déjà occupé à cette date et plage horaire
-    const profOccupe = await verifierConflitProfesseur(id_professeur, affectation.date, affectation.plageHoraire);
-    if (profOccupe) {
-        throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire");
+    if (estRecurrente(affectation.date, affectation.jour)) {
+        // Séance récurrente (date null) : on compare par jour de la semaine et par semestre
+        const profOccupe = await verifierConflitRecurrent(
+            { id_professeur }, affectation.jour, affectation.plageHoraire, id_affectation, affectation.id_semestre
+        );
+        if (profOccupe) {
+            throw new Error("Conflit : ce professeur est déjà assigné à un cours à ce jour et cette plage horaire pour ce semestre");
+        }
+    } else {
+        // Vérifier si le professeur est déjà occupé à cette date et plage horaire
+        // (cette séance est exclue : réassigner le même professeur ne doit pas créer un faux conflit avec elle-même)
+        const profOccupe = await verifierConflitProfesseur(id_professeur, affectation.date, affectation.plageHoraire, id_affectation);
+        if (profOccupe) {
+            throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire");
+        }
     }
 
     const updatedAffectation = await prisma.affectationCours.update({
@@ -347,6 +426,19 @@ const getAffectationsByProfesseur = async (id_professeur) => {
  * @returns l'affectation mise à jour
  */
 const updateAffectation = async (id, data) => {
+    // Filtrer avant les contrôles : Prisma interpréterait { set: ... } comme une
+    // opération alors que le contrôle de conflit comparerait un objet au jour.
+    // Les Date restent acceptées pour les appelants internes du modèle.
+    data = {
+        id_cours: primitiveOuIgnoree(data.id_cours),
+        id_salle: primitiveOuIgnoree(data.id_salle),
+        id_professeur: primitiveOuIgnoree(data.id_professeur),
+        id_semestre: primitiveOuIgnoree(data.id_semestre),
+        jour: primitiveOuIgnoree(data.jour),
+        plageHoraire: primitiveOuIgnoree(data.plageHoraire),
+        date: data.date instanceof Date ? data.date : primitiveOuIgnoree(data.date),
+    };
+
     const affectation = await prisma.affectationCours.findUnique({
         where: { id: id },
     });
@@ -365,11 +457,19 @@ const updateAffectation = async (id, data) => {
     const newProf = data.id_professeur !== undefined ? data.id_professeur : affectation.id_professeur;
     const newSemestre = data.id_semestre !== undefined ? data.id_semestre : affectation.id_semestre;
 
+    // Séance récurrente : pas de date précise, contrôlée par jour de la semaine et par semestre
+    const recurrente = estRecurrente(newDate, newJour);
+
     // Vérifier conflit salle (exclure l'affectation courante, même semestre seulement)
     if (newSalle && newDate) {
         const salleOccupee = await verifierConflitSalle(newSalle, newDate, newPlage, id, newSemestre);
         if (salleOccupee) {
             throw new Error("Conflit : cette salle est déjà occupée à cette date et plage horaire pour ce semestre");
+        }
+    } else if (newSalle && recurrente) {
+        const salleOccupee = await verifierConflitRecurrent({ id_salle: newSalle }, newJour, newPlage, id, newSemestre);
+        if (salleOccupee) {
+            throw new Error("Conflit : cette salle est déjà occupée à ce jour et cette plage horaire pour ce semestre");
         }
     }
 
@@ -378,6 +478,11 @@ const updateAffectation = async (id, data) => {
         const profOccupe = await verifierConflitProfesseur(newProf, newDate, newPlage, id, newSemestre);
         if (profOccupe) {
             throw new Error("Conflit : ce professeur est déjà assigné à un cours à cette date et plage horaire pour ce semestre");
+        }
+    } else if (newProf && recurrente) {
+        const profOccupe = await verifierConflitRecurrent({ id_professeur: newProf }, newJour, newPlage, id, newSemestre);
+        if (profOccupe) {
+            throw new Error("Conflit : ce professeur est déjà assigné à un cours à ce jour et cette plage horaire pour ce semestre");
         }
     }
 
@@ -545,8 +650,13 @@ const getProfesseursAvecDisponibilitePourSlot = async (id_semestre, jour, debut,
             };
         }
 
-        // Affectations du prof pour ce jour (même jour français)
-        const affectationsJour = affectationsProf.filter(a => a.jour === nomJour);
+        // Affectations du prof pour ce jour. Les séances récurrentes stockent le jour en chiffre ("0" à "6"),
+        // les séances héritées avec le nom français : on compare donc les indices, pas les libellés.
+        const indiceDemande = indiceJour(nomJour);
+        const affectationsJour = affectationsProf.filter(function (a) {
+            const indiceAffectation = indiceJour(a.jour);
+            return indiceAffectation !== null && indiceAffectation === indiceDemande;
+        });
         
         // Calculer heures occupées ce jour
         const minutesOccupees = affectationsJour.reduce(function (sum, a) {

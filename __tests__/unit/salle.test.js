@@ -172,6 +172,108 @@ describe('Salle Model', () => {
                 salleModel.updateSalle(999, { capacite: 50 })
             ).rejects.toThrow('Salle non trouvée');
         });
+
+        describe('liste blanche des champs (mass-assignment)', () => {
+            const CHAMPS_AUTORISES = ['code', 'type', 'capacite'];
+
+            beforeEach(() => {
+                mockPrisma.salle.findUnique.mockResolvedValue({ id: 1 });
+                mockPrisma.salle.update.mockResolvedValue({ id: 1 });
+            });
+
+            test('devrait transmettre les champs autorisés et rien d\'autre', async () => {
+                await salleModel.updateSalle(1, {
+                    code: 'A999',
+                    type: 'Classe',
+                    capacite: 45,
+                    id: 99,
+                    createdAt: new Date('2020-01-01'),
+                    affectations: { deleteMany: {} },
+                    disponibilites: { deleteMany: {} },
+                });
+
+                const { where, data } = mockPrisma.salle.update.mock.calls[0][0];
+                expect(where).toEqual({ id: 1 });
+                expect(data).toEqual({ code: 'A999', type: 'Classe', capacite: 45 });
+                expect(CHAMPS_AUTORISES).toEqual(expect.arrayContaining(Object.keys(data)));
+            });
+
+            test('ne devrait jamais transmettre une écriture imbriquée sur une relation', async () => {
+                await salleModel.updateSalle(1, {
+                    affectations: { deleteMany: {} },
+                    disponibilites: { create: { jour: 'Lundi', plageHoraire: '08:00-09:00', typeConflit: 'Salle' } },
+                });
+
+                const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                expect(data).toEqual({});
+                expect(CHAMPS_AUTORISES).toEqual(expect.arrayContaining(Object.keys(data)));
+            });
+
+            test('ne devrait pas laisser modifier id, createdAt ni updatedAt', async () => {
+                await salleModel.updateSalle(1, {
+                    id: 2,
+                    createdAt: new Date('2020-01-01'),
+                    updatedAt: new Date('2020-01-01'),
+                });
+
+                const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                expect(Object.keys(data)).not.toContain('id');
+                expect(Object.keys(data)).not.toContain('createdAt');
+                expect(Object.keys(data)).not.toContain('updatedAt');
+            });
+
+            test('devrait permettre une mise à jour partielle', async () => {
+                await salleModel.updateSalle(1, { capacite: 40 });
+
+                const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                expect(data).toEqual({ capacite: 40 });
+            });
+
+            describe('valeurs non primitives (opérateurs Prisma)', () => {
+                // { increment: 1 }, { set: ... } ou { connect: ... } sont des instructions pour Prisma, pas des données
+                test.each([
+                    ['un opérateur d\'incrément', { increment: 1 }],
+                    ['un opérateur set', { set: 5000 }],
+                    ['un tableau', [1, 2]],
+                    ['un objet imbriqué', { connect: { id: 1 } }],
+                    ['une date', new Date('2020-01-01')],
+                ])('devrait ignorer capacite quand la valeur est %s', async (_libelle, valeur) => {
+                    await salleModel.updateSalle(1, { capacite: valeur });
+
+                    const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                    expect(data.capacite).toBeUndefined();
+                });
+
+                test('devrait ignorer les champs sous forme d\'objet et garder les champs valides', async () => {
+                    await salleModel.updateSalle(1, { code: { set: 'HACK' }, type: 'Classe', capacite: 45 });
+
+                    const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                    expect(data.code).toBeUndefined();
+                    expect(data).toEqual({ type: 'Classe', capacite: 45 });
+                });
+
+                test('ne devrait transmettre aucune valeur objet, quel que soit le champ', async () => {
+                    await salleModel.updateSalle(1, {
+                        code: { set: 'x' },
+                        type: ['Classe'],
+                        capacite: { increment: 1 },
+                    });
+
+                    const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                    const valeursObjet = Object.values(data).filter((v) => typeof v === 'object' && v !== null);
+                    expect(valeursObjet).toEqual([]);
+                });
+
+                test('devrait conserver les valeurs primitives, y compris 0 et null', async () => {
+                    await salleModel.updateSalle(1, { code: 'B12', type: null, capacite: 0 });
+
+                    const { data } = mockPrisma.salle.update.mock.calls[0][0];
+                    expect(data).toEqual({ code: 'B12', type: null, capacite: 0 });
+                    expect(data.type).toBeNull();
+                    expect(data.capacite).toBe(0);
+                });
+            });
+        });
     });
 
     describe('deleteSalle', () => {
