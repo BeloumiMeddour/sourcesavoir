@@ -126,6 +126,45 @@ Les anciens formulaires n'écrivent pas encore les rattachements
 La visibilité enseignant nécessite que ces données de rattachement existent ;
 aucun rapprochement automatique des anciennes données n'est réalisé.
 
+## Protections de l'entrée
+
+`middleware/entree.js`, appelé par `server.js` avant les routes, active trois
+protections :
+
+- **CSRF** (`gardeCsrf`) sur `POST`, `PUT`, `PATCH` et `DELETE` : un en-tête
+  `Origin` doit désigner l'hôte de la requête ; sans `Origin`, la requête doit
+  être en JSON ou porter `X-Requested-With` ou `X-Nom-Fichier`. Le cookie de
+  session est `httpOnly` et `SameSite=Lax`.
+- **Limitation des connexions** sur `POST /connexion` : par adresse IP et par
+  courriel normalisé (casse et espaces ignorés).
+- **Limitation des inscriptions** sur `POST /inscription` : par adresse IP.
+
+La garde CSRF passe avant les limiteurs, pour qu'une requête venue d'un autre
+site ne consomme pas les tentatives d'un courriel. Les compteurs sont en
+mémoire : ils repartent à zéro au redémarrage et ne sont pas partagés entre
+plusieurs instances du serveur.
+
+| Variable | Rôle | Défaut |
+| --- | --- | --- |
+| `TRUST_PROXY` | Nombre de mandataires crus pour lire l'adresse IP (0 à 10, un nombre seulement) | 1 si `WEBSITE_SITE_NAME` existe (Azure App Service), sinon 0 |
+| `ORIGINES_AUTORISEES` | Hôtes supplémentaires acceptés dans `Origin`, séparés par des virgules | vide |
+| `LIMITE_FENETRE_SECONDES` | Durée de la fenêtre glissante | 900 |
+| `LIMITE_CONNEXION_IP_MAX` | Tentatives de connexion par IP dans la fenêtre | 30 |
+| `LIMITE_CONNEXION_COURRIEL_MAX` | Tentatives de connexion par courriel | 10 |
+| `LIMITE_INSCRIPTION_IP_MAX` | Inscriptions par IP | 10 |
+
+Point d'attention au déploiement : sans `TRUST_PROXY` correct derrière un
+mandataire, `req.ip` est l'adresse du mandataire et tous les visiteurs
+partagent le même plafond par IP. Ce défaut est couvert sur Azure App Service
+par `WEBSITE_SITE_NAME` ; ailleurs, régler `TRUST_PROXY` au nombre de mandataires
+placés devant l'application. Une valeur non numérique (par exemple `true`) est
+ignorée, car elle ferait croire n'importe quel `X-Forwarded-For`.
+
+Ces protections sont vérifiées par `__tests__/integration/entree.integration.test.js`
+(application Express réelle, sans base de données). Elles ne remplacent pas un
+contrôle sur l'environnement déployé : le comportement derrière Azure n'a pas
+été observé.
+
 ## Vérification sans base
 
 ```powershell
@@ -201,5 +240,5 @@ base réelle. La procédure des migrations et du baseline est décrite dans
 
 Les interfaces famille, les devoirs, remises et corrections appartiennent au
 lot suivant. Les corrections générales encore signalées dans le diagnostic
-(concurrence des réservations du planning, CSRF, limitation de connexion,
-déploiement et réconciliation de la base réelle) restent des travaux distincts.
+(concurrence des réservations du planning, déploiement et réconciliation de la
+base réelle) restent des travaux distincts.

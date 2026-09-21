@@ -112,7 +112,7 @@ export const normaliserIp = (ip) => {
 
 /**
  * Clé par adresse IP : req.ip, que seul Express calcule (X-Forwarded-For n'est
- * cru que si "trust proxy" est activé, voir app.js).
+ * cru que si "trust proxy" est activé, voir middleware/entree.js).
  */
 export const cleIp = (req) => normaliserIp(req.ip);
 
