@@ -1,0 +1,78 @@
+/* ===========================
+   VARIABLES
+=========================== */
+
+/* Breakpoints unifiés (référence) :
+   - Mobile  : max-width: 640px
+   - Tablette: max-width: 1024px
+   - Desktop : au-delà
+   - Sidebar collapse: max-width: 768px
+*/
+
+:root {
+    --sidebar-width: 220px;
+    --topbar-height: 50px;
+    --rouge-lacite: #006838;
+    --rouge-lacite-fonce: #005530;
+    --rouge-lacite-clair: #00894a;
+    --rouge-lacite-ultra-clair: #e6f4ed;
+    --gris-fonce: #333333;
+    --gris-sidebar: #ffffff;
+    --gris-sidebar-hover: #f0f0f0;
+    --vert: #27ae60;
+    --vert-fonce: #1e8449;
+    --vert-clair: #e8f8f0;
+    --rouge: #e74c3c;
+    --rouge-clair: #fdedec;
+    --orange: #e67e22;
+    --orange-clair: #fef3c7;
+    --bleu: #2980b9;
+    --gris-fond: #f5f5f5;
+    --gris-bordure: #ddd;
+    --gris-texte: #555;
+    --blanc: #ffffff;
+    --noir: #222222;
+    --ombre: 0 2px 10px rgba(0, 0, 0, 0.08);
+    --ombre-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --transition: all 0.25s ease;
+
+    /* Effet verre */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-blur: blur(10px);
+    --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --glass-border: rgba(226, 232, 240, 0.8);
+}
+
+/* ===========================
+   BASE
+=========================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    overflow-x: hidden;
+}
+
+body {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--noir);
+    background-color: var(--gris-fond);
+    line-height: 1.6;
+    min-height: 100vh;
+    width: 100%;
+}
+
+a {
+    color: var(--rouge-lacite);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

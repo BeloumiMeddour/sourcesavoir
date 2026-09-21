@@ -1,0 +1,112 @@
+/* ==============================================
+   PAGE COURS — EPlanify
+   Organisé par parties :
+     1. BADGES TYPE SALLE
+     2. BADGES PROGRAMME
+     3. BADGES ÉTAPE
+     4. TABLEAU COURS
+     5. RESPONSIVE
+============================================== */
+
+/* ── 1. BADGES TYPE SALLE ─────────────────── */
+
+.badge-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.22rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-type-classe {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-type-labo {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-type-amphi {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+.badge-type-informatique {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* ── 2. BADGES PROGRAMME ──────────────────── */
+
+.badge-programme {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--rouge-lacite-ultra-clair);
+    color: var(--rouge-lacite);
+    border: 1px solid rgba(0, 104, 56, 0.15);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── 3. BADGES ÉTAPE ──────────────────────── */
+
+.badge-etape {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 800;
+    background: var(--gris-fond);
+    color: var(--gris-fonce);
+    border: 2px solid var(--gris-bordure);
+}
+
+/* ── 4. TABLEAU COURS ─────────────────────── */
+
+#table-cours td {
+    vertical-align: middle;
+}
+
+#table-cours .cours-code {
+    font-weight: 700;
+    color: var(--rouge-lacite);
+    font-size: 0.88rem;
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 0.5px;
+}
+
+#table-cours .cours-nom {
+    font-size: 0.85rem;
+    color: var(--gris-fonce);
+    font-weight: 500;
+}
+
+#table-cours .cours-duree {
+    font-weight: 600;
+    color: var(--bleu);
+    white-space: nowrap;
+}
+
+/* ── 5. RESPONSIVE ────────────────────────── */
+
+@media (max-width: 768px) {
+    .badge-programme {
+        max-width: 100px;
+        font-size: 0.68rem;
+    }
+}

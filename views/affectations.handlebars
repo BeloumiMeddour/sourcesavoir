@@ -1,0 +1,225 @@
+<section class="page-section">
+    <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Gestion des Affectations</h1>
+    <div class="affectation-form-container">
+        <!-- Formulaire à gauche -->
+        <div class="form-card">
+            <form id="form-affectation">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_programme">Programme</label>
+                    <select id="id_programme">
+                        <option value="">-- Tous les programmes --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="id_semestre">Semestre</label>
+                    <select id="id_semestre" required>
+                        <option value="">-- Choisir un semestre --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_cours">Cours</label>
+                    <select id="id_cours" required>
+                        <option value="">-- Choisir un cours --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="id_salle">Salle</label>
+                    <select id="id_salle" required>
+                        <option value="">-- Choisir une salle --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="jour">Jour de la semaine</label>
+                    <select id="jour" required>
+                        <option value="">-- Choisir un jour --</option>
+                        <option value="1">Lundi</option>
+                        <option value="2">Mardi</option>
+                        <option value="3">Mercredi</option>
+                        <option value="4">Jeudi</option>
+                        <option value="5">Vendredi</option>
+                        <option value="6">Samedi</option>
+                        <option value="0">Dimanche</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Plage horaire</label>
+                    <div class="plage-horaire-row">
+                        <select id="heureDebut" required>
+                            <option value="">Début</option>
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="19:00">19:00</option>
+                            <option value="20:00">20:00</option>
+                            <option value="21:00">21:00</option>
+                        </select>
+                        <span>à</span>
+                        <select id="heureFin" required>
+                            <option value="">Fin</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="19:00">19:00</option>
+                            <option value="20:00">20:00</option>
+                            <option value="21:00">21:00</option>
+                            <option value="22:00">22:00</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_professeur">Professeur</label>
+                    <select id="id_professeur" required>
+                        <option value="">-- Choisir un professeur --</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Affecter</button>
+        </form>
+        </div>
+
+        <!-- Sidebar salle (disponibilité) -->
+        <div class="availability-sidebar">
+            <h3>Salle</h3>
+            <div id="availability-panel-salle" class="availability-panel">
+                <p class="info-text">Sélectionnez une salle</p>
+            </div>
+        </div>
+
+        <!-- Sidebar prof (planning) -->
+        <div class="availability-sidebar">
+            <h3>Professeur</h3>
+            <div id="availability-panel" class="availability-panel">
+                <p class="info-text">Sélectionnez un professeur</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="msg-affectation" class="message"></div>
+
+    <div class="affectations-header">
+        <h2>Liste des affectations</h2>
+    </div>
+
+    <div class="table-filters">
+        <div class="filter-group">
+            <label>Semestre</label>
+            <select id="filtre-semestre" class="filter-select">
+                <option value="">-- Tous --</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Programme</label>
+            <select id="filtre-programme" class="filter-select">
+                <option value="">-- Tous --</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Professeur</label>
+            <select id="filtre-prof" class="filter-select">
+                <option value="">-- Tous --</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Jour</label>
+            <select id="filtre-jour" class="filter-select">
+                <option value="">-- Tous --</option>
+                <option value="1">Lundi</option>
+                <option value="2">Mardi</option>
+                <option value="3">Mercredi</option>
+                <option value="4">Jeudi</option>
+                <option value="5">Vendredi</option>
+                <option value="6">Samedi</option>
+                <option value="0">Dimanche</option>
+            </select>
+        </div>
+        <button id="btn-reset-filtres" class="btn-secondary">Réinitialiser</button>
+    </div>
+    
+    <div class="table-container">
+        <table id="table-affectations">
+            <thead>
+                <tr>
+                    <th>Programme</th>
+                    <th>Cours</th>
+                    <th>Salle</th>
+                    <th>Professeur</th>
+                    <th>Semestre</th>
+                    <th>Date</th>
+                    <th>Plage horaire</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</section>
+
+<!-- Modale modification affectation (HORS section) -->
+<div id="modale-modifier" class="modale-overlay" style="display:none;">
+    <div class="modale-contenu">
+        <h3>Modifier l'affectation</h3>
+        <input type="hidden" id="mod-id">
+        <div class="modale-champ">
+            <label>Cours</label>
+            <select id="mod-cours"></select>
+        </div>
+        <div class="modale-champ">
+            <label>Salle</label>
+            <select id="mod-salle"></select>
+        </div>
+        <div class="modale-champ">
+            <label>Professeur</label>
+            <select id="mod-prof"></select>
+        </div>
+        <div class="modale-champ">
+            <label for="mod-jour">Jour de la semaine</label>
+            <select id="mod-jour">
+                <option value="">-- Choisir un jour --</option>
+                <option value="1">Lundi</option>
+                <option value="2">Mardi</option>
+                <option value="3">Mercredi</option>
+                <option value="4">Jeudi</option>
+                <option value="5">Vendredi</option>
+                <option value="6">Samedi</option>
+                <option value="0">Dimanche</option>
+            </select>
+        </div>
+        <div class="modale-champ">
+            <label for="mod-date">Date spécifique</label>
+            <input type="date" id="mod-date">
+        </div>
+        <div class="modale-champ">
+            <label>Plage horaire</label>
+            <div class="plage-horaire-row">
+                <select id="mod-debut"></select>
+                <span>à</span>
+                <select id="mod-fin"></select>
+            </div>
+        </div>
+        <div class="modale-actions">
+            <button class="btn btn-modifier" id="mod-valider">Valider</button>
+            <button class="btn btn-supprimer" id="mod-annuler">Annuler</button>
+        </div>
+    </div>
+</div>

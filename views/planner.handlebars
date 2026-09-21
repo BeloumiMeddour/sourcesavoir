@@ -1,0 +1,90 @@
+<!-- En-tête visible uniquement à l'impression -->
+<div id="print-header" class="print-header">
+    <div class="print-header-logo">EPlanify</div>
+    <div class="print-header-info">
+        <strong>Emploi du Temps</strong>
+        <span id="print-semaine-label"></span>
+        <span id="print-filtres-label"></span>
+    </div>
+    <div class="print-header-date" id="print-date"></div>
+</div>
+
+<section class="page-section planner-section">
+    <div class="planner-top-bar">
+        <div class="planner-top-left">
+            <h1 class="planner-title">Emploi du Temps</h1>
+            <span class="planner-subtitle" id="label-semaine">Sélectionnez un semestre</span>
+        </div>
+        <div class="planner-top-right">
+            <button class="btn btn-nav" id="btn-prec">&#8592; Préc.</button>
+            <button class="btn btn-bleu" id="btn-aujourdhui">Aujourd'hui</button>
+            <button class="btn btn-nav" id="btn-suiv">Suiv. &#8594;</button>
+            <button class="btn btn-imprimer" id="btn-imprimer" title="Imprimer uniquement le calendrier">
+                &#128424; Imprimer
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="planner-filters-bar">
+        <div class="filter-group">
+            <label class="filter-label">Semestre</label>
+            <select id="select-semestre" class="filter-select filter-select--primary">
+                <option value="">-- Choisir un semestre --</option>
+            </select>
+        </div>
+        <div class="filter-sep"></div>
+        <div class="filter-group">
+            <label class="filter-label">Programme</label>
+            <select id="filtre-programme" class="filter-select filter-select--accent">
+                <option value="">Tous les programmes</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Professeur</label>
+            <select id="filtre-prof" class="filter-select">
+                <option value="">Tous les professeurs</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Salle</label>
+            <select id="filtre-salle" class="filter-select">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <button class="btn-reset-filters" id="btn-reset-filtres" title="Réinitialiser les filtres">&#x21BA; Réinitialiser</button>
+    </div>
+
+    <!-- Grille -->
+    <div class="planning-card">
+        <div class="planning-grid" id="planning-grid">
+            <!-- Rempli par JS -->
+        </div>
+
+        <div class="planning-legende">
+            <div class="legende-item">
+                <div class="legende-dot legende-dot--multi"></div>
+                <span>Cours planifié (couleur par cours)</span>
+            </div>
+            <div class="legende-item">
+                <div class="legende-dot legende-dot--ferie"></div>
+                <span>Jour férié</span>
+            </div>
+            <div class="legende-item">
+                <div class="legende-dot legende-dot--today"></div>
+                <span>Aujourd'hui</span>
+            </div>
+            <div class="legende-item">
+                <div class="legende-dot legende-dot--availability"></div>
+                <span>Disponibilité professeur</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message aucun résultat -->
+    <div id="planner-empty-msg" class="planner-empty" style="display:none;">
+        <div class="planner-empty-icon">📅</div>
+        <p>Aucun cours à afficher pour ce filtre.</p>
+        <small>Sélectionnez un semestre et/ou un programme.</small>
+    </div>
+</section>

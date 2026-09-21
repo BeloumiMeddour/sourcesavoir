@@ -1,0 +1,129 @@
+<section class="page-section">
+    <div class="top-action-row">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Gestion des Professeurs</h1>
+        <div class="right-actions">
+            <input type="text" class="search-input" id="search-profs" placeholder="Rechercher..." />
+            <button class="btn btn-vert" id="btn-toggle-form">+ Ajouter un Professeur</button>
+        </div>
+    </div>
+
+    <div class="form-card hidden" id="form-card">
+        <form id="form-professeur">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="matricule">Matricule</label>
+                    <input type="text" id="matricule" placeholder="Ex: P001" required />
+                </div>
+                <div class="form-group">
+                    <label for="specialite">Spécialité</label>
+                    <input type="text" id="specialite" placeholder="Ex: Informatique" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" id="nom" placeholder="Ex: Dupont" required />
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" id="prenom" placeholder="Ex: Jean" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="programme">Programme</label>
+                    <input type="text" id="programme" placeholder="Ex: Génie Informatique" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-ajouter">+ Ajouter le professeur</button>
+        </form>
+    </div>
+
+    <div id="msg-professeur" class="message"></div>
+
+    <div class="table-container">
+        <table id="table-professeurs">
+            <thead>
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Spécialité</th>
+                    <th>Programme</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</section>
+
+<!-- Modale disponibilités (HORS section pour éviter le stacking context backdrop-filter) -->
+<div id="modale-disponibilites" class="modale-overlay" style="display:none;">
+    <div class="modale-contenu" style="max-width: 600px;">
+        <div class="modale-header">
+            <h3>Disponibilités — <span id="dispo-prof-nom"></span></h3>
+            <button class="modale-close" onclick="fermerModalDisponibilites()">✕</button>
+        </div>
+
+        <div class="modale-body">
+            <div class="dispo-actions-bar">
+                <button class="btn btn-vert" onclick="cocherTous()">✓ Cocher tous</button>
+                <button class="btn btn-supprimer" onclick="decocherTous()">✕ Décocher tous</button>
+            </div>
+
+            <div class="table-container">
+                <table id="table-dispo-inner">
+                    <thead>
+                        <tr>
+                            <th>Jour</th>
+                            <th>Début</th>
+                            <th>Fin</th>
+                            <th style="text-align:center;">Actif</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableau-disponibilites"></tbody>
+                </table>
+            </div>
+
+            <div id="msg-dispo" class="message" style="margin-top:0.75rem;"></div>
+
+            <div class="modale-actions">
+                <button class="btn btn-fermer" onclick="fermerModalDisponibilites()">Annuler</button>
+                <button class="btn btn-ajouter" onclick="sauvegarderDisponibilites()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modale modification professeur -->
+<div id="modale-modifier" class="modale-overlay" style="display:none;">
+    <div class="modale-contenu">
+        <h3>Modifier le professeur</h3>
+        <div class="modale-champ">
+            <label>Matricule</label>
+            <input type="text" id="mod-matricule" />
+        </div>
+        <div class="modale-champ">
+            <label>Nom</label>
+            <input type="text" id="mod-nom" />
+        </div>
+        <div class="modale-champ">
+            <label>Prénom</label>
+            <input type="text" id="mod-prenom" />
+        </div>
+        <div class="modale-champ">
+            <label>Spécialité</label>
+            <input type="text" id="mod-specialite" />
+        </div>
+        <div class="modale-champ">
+            <label>Programme</label>
+            <input type="text" id="mod-programme" />
+        </div>
+        <div class="modale-actions">
+            <button class="btn btn-modifier" id="mod-valider">Valider</button>
+            <button class="btn btn-supprimer" id="mod-annuler">Annuler</button>
+        </div>
+    </div>
+</div>
