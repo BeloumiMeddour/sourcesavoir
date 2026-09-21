@@ -9,9 +9,12 @@
         "test": "jest",
         "test:coverage": "jest --coverage",
         "test:watch": "jest --watch",
-        "test:integration": "jest __tests__/integration/"
+        "test:integration": "jest __tests__/integration/",
+        "db:garde": "node scripts/garde-jetable.js",
+        "db:status": "npm run db:garde && prisma migrate status",
+        "db:deploy:jetable": "npm run db:garde && prisma migrate deploy"
     },
-    "author": "Sedric Ouambo",
+    "author": "Meddour Beloumi",
     "license": "UNLICENSED",
     "type": "module",
     "dependencies": {
